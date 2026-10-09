@@ -112,6 +112,12 @@ L'interface applique le design system **Intergee** (lisible, facile à toucher, 
 - Zones cliquables : `min-h-target` (56px) ; utilitaires `btn-primary` (une action principale par écran),
   `btn-secondary`, `link`, `form-input`, `card`, `tag`, `focus-ring`.
 - Statuts et messages : toujours une icône (`AppIcon`) et un mot, jamais la couleur seule.
+- Thème : attribut `data-theme` (`light` / `dark`) sur `<html>`, posé avant le premier affichage par le script
+  d'`index.html` (choix mémorisé, sinon réglage du système) et basculé par `ThemeToggle` en haut à droite
+  (`composables/useTheme.js`, mémorisé dans `localStorage`).
+- Dates : `DateTimePicker` (calendrier mensuel à cases de 56px, navigation au clavier, puis créneaux d'une
+  demi-heure de 8 h à 20 h) remplace le `datetime-local` natif, illisible et non stylable. Même valeur
+  `AAAA-MM-JJTHH:mm`, donc même validation.
 
 ## Accessibilité et responsive
 

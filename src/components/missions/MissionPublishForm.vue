@@ -5,6 +5,7 @@ import { geocodeAddress } from '@/api/geocodingApi'
 import { MISSION_CATEGORIES } from '@/constants/missionCategories'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import FormField from '@/components/ui/FormField.vue'
+import DateTimePicker from '@/components/ui/DateTimePicker.vue'
 import { formatDateTime, formatDuration } from '@/utils/formatters'
 import {
   DESCRIPTION_MAX_LENGTH,
@@ -188,16 +189,22 @@ async function focusFirstInvalidField() {
         />
       </FormField>
 
-      <FormField id="scheduledAt" v-slot="field" label="Date et heure" :error="errors.scheduledAt" required>
-        <input
+      <FormField
+        id="scheduledAt"
+        v-slot="field"
+        class="sm:col-span-2"
+        label="Date et heure"
+        help="Choisissez un jour, puis une heure de début entre 8 h et 20 h."
+        :error="errors.scheduledAt"
+        required
+      >
+        <DateTimePicker
           :id="field.id"
           v-model="form.scheduledAt"
-          type="datetime-local"
-          class="form-input"
+          label="Date et heure de la mission"
           :min="minScheduledAt"
-          :aria-describedby="field.describedBy"
-          :aria-invalid="field.invalid"
-          required
+          :described-by="field.describedBy"
+          :invalid="field.invalid"
         />
       </FormField>
 
