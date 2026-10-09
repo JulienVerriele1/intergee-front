@@ -4,6 +4,7 @@ import { RouterView, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import AppHeader from '@/components/AppHeader.vue'
+import AppBackdrop from '@/components/AppBackdrop.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,9 +35,13 @@ router.afterEach((to, from) => {
   </a>
   <div class="flex min-h-dvh flex-col">
     <AppHeader />
-    <main id="main-content" ref="mainElement" tabindex="-1" class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 outline-none sm:px-6 sm:py-12">
-      <RouterView />
-    </main>
+    <!-- The backdrop fills the space between header and footer; isolate keeps its negative z-index above the page -->
+    <div class="relative isolate flex flex-1 flex-col">
+      <AppBackdrop />
+      <main id="main-content" ref="mainElement" tabindex="-1" class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 outline-none sm:px-6 sm:py-12">
+        <RouterView />
+      </main>
+    </div>
     <footer class="border-t border-border-subtle bg-surface-sunken py-6 text-center text-base text-ink-muted">
       Intergee — entraide entre générations
     </footer>
