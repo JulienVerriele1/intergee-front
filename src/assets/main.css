@@ -2,11 +2,13 @@
 
 /*
  * Intergee design system — tokens.
+ * The theme is the data-theme attribute of <html> ("light" or "dark"), set before the first paint by the script in
+ * index.html from the visitor's choice (ThemeToggle) or, failing that, from the system setting.
  * Source of truth: the "Intergee" design system (tokens.json). Each value exists once, as an --ig-* custom
  * property switched by the colour scheme, and is exposed to Tailwind through @theme (bg-surface, text-ink…).
  */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   --ig-surface: #fbf7f0;
   --ig-surface-raised: #ffffff;
@@ -30,29 +32,28 @@
   --ig-shadow-card: 0 1px 2px rgba(31, 42, 46, 0.08), 0 4px 12px rgba(31, 42, 46, 0.06);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ig-surface: #131a1c;
-    --ig-surface-raised: #1c2528;
-    --ig-surface-sunken: #0d1214;
-    --ig-ink: #f3eee6;
-    --ig-ink-muted: #b7c0c0;
-    --ig-border: #7a8789;
-    --ig-border-subtle: #2b3638;
-    --ig-primary: #62c6b8;
-    --ig-on-primary: #0a2420;
-    --ig-primary-ink: #8fd9ce;
-    --ig-primary-soft: #1d3936;
-    --ig-accent: #f2b06f;
-    --ig-on-accent: #1f2a2e;
-    --ig-accent-soft: #3d2b1b;
-    --ig-success: #74cf9d;
-    --ig-success-soft: #173326;
-    --ig-danger: #ff9b7d;
-    --ig-danger-soft: #3d1d14;
-    --ig-focus: #8ab4ff;
-    --ig-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ig-surface: #131a1c;
+  --ig-surface-raised: #1c2528;
+  --ig-surface-sunken: #0d1214;
+  --ig-ink: #f3eee6;
+  --ig-ink-muted: #b7c0c0;
+  --ig-border: #7a8789;
+  --ig-border-subtle: #2b3638;
+  --ig-primary: #62c6b8;
+  --ig-on-primary: #0a2420;
+  --ig-primary-ink: #8fd9ce;
+  --ig-primary-soft: #1d3936;
+  --ig-accent: #f2b06f;
+  --ig-on-accent: #1f2a2e;
+  --ig-accent-soft: #3d2b1b;
+  --ig-success: #74cf9d;
+  --ig-success-soft: #173326;
+  --ig-danger: #ff9b7d;
+  --ig-danger-soft: #3d1d14;
+  --ig-focus: #8ab4ff;
+  --ig-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 @theme inline {
