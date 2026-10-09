@@ -28,16 +28,16 @@ router.afterEach((to, from) => {
 <template>
   <a
     href="#main-content"
-    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:font-semibold focus:shadow"
+    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-full focus:bg-surface-raised focus:px-6 focus:py-3 focus:font-bold focus:text-primary-ink focus:shadow-card focus:outline-3 focus:outline-focus"
   >
     Aller au contenu
   </a>
   <div class="flex min-h-dvh flex-col">
     <AppHeader />
-    <main id="main-content" ref="mainElement" tabindex="-1" class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 outline-none sm:px-6 sm:py-10">
+    <main id="main-content" ref="mainElement" tabindex="-1" class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 outline-none sm:px-6 sm:py-12">
       <RouterView />
     </main>
-    <footer class="border-t border-slate-200 bg-white py-4 text-center text-sm text-slate-600">
+    <footer class="border-t border-border-subtle bg-surface-sunken py-6 text-center text-base text-ink-muted">
       Intergee — entraide entre générations
     </footer>
   </div>

@@ -49,9 +49,17 @@ export function applicationStatus(application) {
   }
 }
 
+/** Status tag of the design system: a soft background and an icon, the word itself always in ink. */
 export const TONE_CLASSES = Object.freeze({
-  neutral: 'bg-slate-100 text-slate-800',
-  info: 'bg-blue-100 text-blue-900',
-  success: 'bg-green-100 text-green-900',
-  warning: 'bg-amber-100 text-amber-900',
+  neutral: 'bg-surface-sunken [&>svg]:text-ink-muted',
+  info: 'bg-primary-soft [&>svg]:text-primary-ink',
+  success: 'bg-success-soft [&>svg]:text-success',
+  warning: 'bg-accent-soft [&>svg]:text-ink',
+})
+
+export const TONE_ICONS = Object.freeze({
+  neutral: 'dot',
+  info: 'clock',
+  success: 'check',
+  warning: 'alert',
 })

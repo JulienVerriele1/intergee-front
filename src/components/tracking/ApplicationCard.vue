@@ -54,7 +54,7 @@ function withdraw() {
   <article class="card flex flex-col gap-4" :aria-labelledby="titleId">
     <StatusBadge :status="status" class="self-end" />
     <MissionHeadline :mission="mission" :title-id="titleId" />
-    <p v-if="application.applicationStatus === 'REJECTED'" class="text-sm text-slate-600">
+    <p v-if="application.applicationStatus === 'REJECTED'" class="text-base text-ink-muted">
       Le bénéficiaire a choisi un autre étudiant. Vous pouvez postuler à une autre mission sur ce créneau.
     </p>
 
@@ -75,21 +75,21 @@ function withdraw() {
       <button v-if="!assignment" type="button" class="btn-primary self-start" :disabled="busy" @click="showAddress">
         Voir l'adresse et le contact
       </button>
-      <dl v-else class="grid grid-cols-1 gap-2 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2">
+      <dl v-else class="grid grid-cols-1 gap-2 rounded-lg bg-surface-sunken p-3 text-base sm:grid-cols-2">
         <div>
-          <dt class="font-semibold text-slate-600">Adresse</dt>
+          <dt class="font-bold text-ink-muted">Adresse</dt>
           <dd>
             {{ assignment.location.street }}, {{ assignment.location.postalCode }} {{ assignment.location.city }}
-            <a :href="mapUrl" target="_blank" rel="noopener noreferrer" class="ml-1 text-blue-800 underline">
+            <a :href="mapUrl" target="_blank" rel="noopener noreferrer" class="link ml-1">
               Voir sur la carte<span class="sr-only"> (nouvel onglet)</span>
             </a>
           </dd>
         </div>
         <div>
-          <dt class="font-semibold text-slate-600">Bénéficiaire</dt>
+          <dt class="font-bold text-ink-muted">Bénéficiaire</dt>
           <dd>
             {{ assignment.beneficiary.firstName }} {{ assignment.beneficiary.lastName }} ·
-            <a :href="`tel:${assignment.beneficiary.phone}`" class="text-blue-800 underline">{{ assignment.beneficiary.phone }}</a>
+            <a :href="`tel:${assignment.beneficiary.phone}`" class="link">{{ assignment.beneficiary.phone }}</a>
           </dd>
         </div>
       </dl>

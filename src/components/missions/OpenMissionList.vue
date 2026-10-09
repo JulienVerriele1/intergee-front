@@ -82,11 +82,11 @@ onMounted(loadMissions)
   <section aria-labelledby="open-missions-title" :aria-busy="status === 'loading'">
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h2 id="open-missions-title" class="text-xl font-bold">Missions ouvertes près de chez vous</h2>
-        <p class="text-slate-600">L'adresse exacte est communiquée à l'étudiant retenu.</p>
+        <h2 id="open-missions-title" class="text-2xl font-bold">Missions ouvertes près de chez vous</h2>
+        <p class="text-ink-muted">L'adresse exacte est communiquée à l'étudiant retenu.</p>
       </div>
       <div class="flex flex-col gap-1.5 sm:w-72">
-        <label for="category-filter" class="text-sm font-semibold text-slate-800">Catégorie</label>
+        <label for="category-filter" class="text-base font-bold text-ink">Catégorie</label>
         <select id="category-filter" v-model="category" class="form-input">
           <option value="">Toutes les catégories</option>
           <option v-for="option in MISSION_CATEGORIES" :key="option.value" :value="option.value">
@@ -96,10 +96,10 @@ onMounted(loadMissions)
       </div>
     </div>
 
-    <p v-if="status === 'loading'" role="status" class="text-slate-600">Chargement des missions…</p>
+    <p v-if="status === 'loading'" role="status" class="text-ink-muted">Chargement des missions…</p>
     <AlertMessage v-else-if="status === 'error'" variant="error">{{ errorMessage }}</AlertMessage>
     <template v-else>
-      <p role="status" class="mb-4 text-slate-700">
+      <p role="status" class="mb-4 text-ink">
         {{ result.totalItems === 0
           ? 'Aucune mission ouverte dans votre zone pour le moment.'
           : `${result.totalItems} mission${result.totalItems > 1 ? 's' : ''} dans votre zone` }}
@@ -141,7 +141,7 @@ onMounted(loadMissions)
         <button type="button" class="btn-secondary" :disabled="page === 0" @click="goToPage(page - 1)">
           Précédente
         </button>
-        <span class="text-slate-700">Page {{ page + 1 }} sur {{ result.totalPages }}</span>
+        <span class="text-ink">Page {{ page + 1 }} sur {{ result.totalPages }}</span>
         <button type="button" class="btn-secondary" :disabled="page + 1 >= result.totalPages" @click="goToPage(page + 1)">
           Suivante
         </button>

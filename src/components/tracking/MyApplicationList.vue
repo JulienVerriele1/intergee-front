@@ -43,15 +43,15 @@ onMounted(loadApplications)
 <template>
   <section aria-labelledby="my-applications-title" :aria-busy="status === 'loading'" class="flex flex-col gap-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <h2 id="my-applications-title" class="text-xl font-bold">Vos candidatures</h2>
+      <h2 id="my-applications-title" class="text-2xl font-bold">Vos candidatures</h2>
       <PeriodSwitch v-model="period" />
     </div>
 
     <AlertMessage v-if="successMessage" variant="success">{{ successMessage }}</AlertMessage>
-    <p v-if="status === 'loading'" role="status" class="text-slate-600">Chargement des candidatures…</p>
+    <p v-if="status === 'loading'" role="status" class="text-ink-muted">Chargement des candidatures…</p>
     <AlertMessage v-else-if="status === 'error'" variant="error">{{ errorMessage }}</AlertMessage>
     <template v-else>
-      <p v-if="result.totalItems === 0" role="status" class="text-slate-700">
+      <p v-if="result.totalItems === 0" role="status" class="text-ink">
         {{ period === 'UPCOMING' ? 'Aucune candidature en cours. Trouvez une mission depuis le tableau de bord.' : 'Aucune mission passée.' }}
       </p>
       <ul v-else role="list" class="flex flex-col gap-4">
@@ -61,7 +61,7 @@ onMounted(loadApplications)
       </ul>
       <nav v-if="result.totalPages > 1" aria-label="Pagination des candidatures" class="flex items-center justify-between gap-3">
         <button type="button" class="btn-secondary" :disabled="page === 0" @click="goToPage(page - 1)">Précédente</button>
-        <span class="text-slate-700">Page {{ page + 1 }} sur {{ result.totalPages }}</span>
+        <span class="text-ink">Page {{ page + 1 }} sur {{ result.totalPages }}</span>
         <button type="button" class="btn-secondary" :disabled="page + 1 >= result.totalPages" @click="goToPage(page + 1)">
           Suivante
         </button>

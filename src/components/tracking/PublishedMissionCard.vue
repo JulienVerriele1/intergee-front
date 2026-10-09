@@ -8,6 +8,7 @@ import AlertMessage from '@/components/ui/AlertMessage.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   mission: { type: Object, required: true },
@@ -74,7 +75,7 @@ async function confirm() {
 <template>
   <article class="card flex flex-col gap-4" :aria-labelledby="titleId">
     <div class="flex flex-wrap items-start justify-between gap-2">
-      <p v-if="showBeneficiary" class="text-sm font-semibold text-slate-600">Pour {{ mission.beneficiary.firstName }}</p>
+      <p v-if="showBeneficiary" class="text-base font-bold text-ink-muted">Pour {{ mission.beneficiary.firstName }}</p>
       <StatusBadge :status="status" class="ml-auto" />
     </div>
     <MissionHeadline :mission="mission" :title-id="titleId" />
@@ -97,16 +98,17 @@ async function confirm() {
         <li
           v-for="candidate in candidates"
           :key="candidate.applicantId"
-          class="flex flex-col gap-2 rounded-lg border border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between"
+          class="flex flex-col gap-2 rounded-lg border border-border-subtle p-3 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
-            <p class="font-semibold">
+            <p class="font-bold">
               {{ candidate.firstName }}
-              <span v-if="candidate.verified" class="ml-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-900">
+              <span v-if="candidate.verified" class="tag ml-1 bg-primary-soft align-middle">
+                <AppIcon name="shield" class="text-primary-ink" />
                 Étudiant vérifié
               </span>
             </p>
-            <p class="text-sm text-slate-600">{{ candidate.school }} · candidature du {{ formatDateTime(candidate.appliedAt) }}</p>
+            <p class="text-base text-ink-muted">{{ candidate.school }} · candidature du {{ formatDateTime(candidate.appliedAt) }}</p>
           </div>
           <button type="button" class="btn-primary" @click="pendingConfirmation = { type: 'assign', candidate }">
             Choisir {{ candidate.firstName }}
@@ -126,14 +128,14 @@ async function confirm() {
       >
         Voir le contact de {{ mission.assignedStudentFirstName }}
       </button>
-      <dl v-else class="grid grid-cols-1 gap-1 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2">
+      <dl v-else class="grid grid-cols-1 gap-1 rounded-lg bg-surface-sunken p-3 text-base sm:grid-cols-2">
         <div>
-          <dt class="font-semibold text-slate-600">Étudiant</dt>
+          <dt class="font-bold text-ink-muted">Étudiant</dt>
           <dd>{{ assignment.student.firstName }} {{ assignment.student.lastName }} · {{ assignment.student.school }}</dd>
         </div>
         <div>
-          <dt class="font-semibold text-slate-600">Email</dt>
-          <dd><a :href="`mailto:${assignment.student.email}`" class="text-blue-800 underline">{{ assignment.student.email }}</a></dd>
+          <dt class="font-bold text-ink-muted">Email</dt>
+          <dd><a :href="`mailto:${assignment.student.email}`" class="link">{{ assignment.student.email }}</a></dd>
         </div>
       </dl>
       <button v-if="canConfirm" type="button" class="btn-primary self-start" @click="pendingConfirmation = { type: 'complete' }">

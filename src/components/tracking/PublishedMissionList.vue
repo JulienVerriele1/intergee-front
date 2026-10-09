@@ -58,13 +58,13 @@ onMounted(loadMissions)
 <template>
   <section aria-labelledby="published-missions-title" :aria-busy="status === 'loading'" class="flex flex-col gap-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <h2 id="published-missions-title" class="text-xl font-bold">
+      <h2 id="published-missions-title" class="text-2xl font-bold">
         {{ props.isCaregiver ? 'Missions des personnes que vous accompagnez' : 'Vos missions' }}
       </h2>
       <PeriodSwitch v-model="period" />
     </div>
     <div v-if="isCaregiver && beneficiaries.length > 1" class="flex flex-col gap-1.5 sm:w-72">
-      <label for="beneficiary-filter" class="text-sm font-semibold text-slate-800">Personne accompagnée</label>
+      <label for="beneficiary-filter" class="text-base font-bold text-ink">Personne accompagnée</label>
       <select id="beneficiary-filter" v-model="beneficiaryFilter" class="form-input">
         <option value="">Toutes</option>
         <option v-for="beneficiary in beneficiaries" :key="beneficiary.id" :value="beneficiary.id">
@@ -74,10 +74,10 @@ onMounted(loadMissions)
     </div>
 
     <AlertMessage v-if="successMessage" variant="success">{{ successMessage }}</AlertMessage>
-    <p v-if="status === 'loading'" role="status" class="text-slate-600">Chargement des missions…</p>
+    <p v-if="status === 'loading'" role="status" class="text-ink-muted">Chargement des missions…</p>
     <AlertMessage v-else-if="status === 'error'" variant="error">{{ errorMessage }}</AlertMessage>
     <template v-else>
-      <p v-if="result.totalItems === 0" role="status" class="text-slate-700">
+      <p v-if="result.totalItems === 0" role="status" class="text-ink">
         {{ period === 'UPCOMING' ? 'Aucune mission à venir.' : 'Aucune mission passée.' }}
       </p>
       <ul v-else role="list" class="flex flex-col gap-4">
@@ -87,7 +87,7 @@ onMounted(loadMissions)
       </ul>
       <nav v-if="result.totalPages > 1" aria-label="Pagination des missions" class="flex items-center justify-between gap-3">
         <button type="button" class="btn-secondary" :disabled="page === 0" @click="goToPage(page - 1)">Précédente</button>
-        <span class="text-slate-700">Page {{ page + 1 }} sur {{ result.totalPages }}</span>
+        <span class="text-ink">Page {{ page + 1 }} sur {{ result.totalPages }}</span>
         <button type="button" class="btn-secondary" :disabled="page + 1 >= result.totalPages" @click="goToPage(page + 1)">
           Suivante
         </button>

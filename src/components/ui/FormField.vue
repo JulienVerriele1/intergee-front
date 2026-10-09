@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import AppIcon from './AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -18,13 +19,16 @@ const describedBy = computed(
 </script>
 
 <template>
-  <div class="flex flex-col gap-1.5">
-    <label :for="id" class="text-sm font-semibold text-slate-800 sm:text-base">
+  <div class="flex flex-col gap-2">
+    <label :for="id" class="text-lg leading-6 font-bold text-ink">
       {{ label }}
-      <span v-if="required" class="text-red-700" aria-hidden="true">*</span>
+      <span v-if="required" class="text-danger" aria-hidden="true">*</span>
     </label>
-    <p v-if="help" :id="helpId" class="text-sm text-slate-600">{{ help }}</p>
+    <p v-if="help" :id="helpId" class="text-base text-ink-muted">{{ help }}</p>
     <slot :id="id" :described-by="describedBy" :invalid="Boolean(error) || undefined" />
-    <p v-if="error" :id="errorId" class="text-sm font-medium text-red-700">{{ error }}</p>
+    <p v-if="error" :id="errorId" class="flex items-start gap-2 rounded-lg bg-danger-soft px-3 py-2 text-base text-ink">
+      <AppIcon name="alert" class="mt-0.5 text-danger" />
+      <span>{{ error }}</span>
+    </p>
   </div>
 </template>

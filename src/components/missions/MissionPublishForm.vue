@@ -90,9 +90,9 @@ async function focusFirstInvalidField() {
 
 <template>
   <section aria-labelledby="publish-title" class="card">
-    <h2 id="publish-title" class="mb-1 text-xl font-bold">Publier une mission</h2>
-    <p class="mb-6 text-slate-600">
-      Décrivez la tâche à réaliser. Les champs marqués <span aria-hidden="true" class="text-red-700">*</span>
+    <h2 id="publish-title" class="mb-1 text-2xl font-bold">Publier une mission</h2>
+    <p class="mb-6 text-ink-muted">
+      Décrivez la tâche à réaliser. Les champs marqués <span aria-hidden="true" class="text-danger">*</span>
       <span class="sr-only">d'un astérisque</span> sont obligatoires.
     </p>
 
@@ -216,8 +216,8 @@ async function focusFirstInvalidField() {
         </select>
       </FormField>
 
-      <fieldset class="grid gap-5 rounded-lg border border-slate-200 p-4 sm:col-span-2 sm:grid-cols-6">
-        <legend class="px-1 font-semibold text-slate-800">Lieu de la mission</legend>
+      <fieldset class="grid gap-5 rounded-lg border border-border-subtle p-4 sm:col-span-2 sm:grid-cols-6">
+        <legend class="px-1 font-bold text-ink">Lieu de la mission</legend>
         <FormField id="street" v-slot="field" class="sm:col-span-6" label="Numéro et rue" :error="errors.street" required>
           <input
             :id="field.id"
@@ -264,11 +264,11 @@ async function focusFirstInvalidField() {
           >
             {{ locating ? 'Localisation…' : 'Vérifier l’adresse' }}
           </button>
-          <p v-if="location" class="rounded-lg bg-green-50 px-3 py-2 text-green-900">
+          <p v-if="location" class="rounded-lg border-2 border-success bg-success-soft px-4 py-3 text-ink">
             Adresse reconnue : <strong>{{ location.label }}</strong>.
             Si ce n'est pas la bonne, corrigez les champs ci-dessus.
           </p>
-          <p v-if="locationError" class="font-medium text-red-700">{{ locationError }}</p>
+          <p v-if="locationError" class="rounded-lg bg-danger-soft px-4 py-3 font-bold text-ink">{{ locationError }}</p>
         </div>
       </fieldset>
 

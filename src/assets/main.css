@@ -1,27 +1,138 @@
 @import "tailwindcss";
 
-@utility btn {
-  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-base font-semibold
-    transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-700
-    disabled:cursor-not-allowed disabled:opacity-60;
+/*
+ * Intergee design system — tokens.
+ * Source of truth: the "Intergee" design system (tokens.json). Each value exists once, as an --ig-* custom
+ * property switched by the colour scheme, and is exposed to Tailwind through @theme (bg-surface, text-ink…).
+ */
+:root {
+  color-scheme: light dark;
+
+  --ig-surface: #fbf7f0;
+  --ig-surface-raised: #ffffff;
+  --ig-surface-sunken: #f2ebe0;
+  --ig-ink: #1f2a2e;
+  --ig-ink-muted: #4a5558;
+  --ig-border: #857d72;
+  --ig-border-subtle: #e3dacc;
+  --ig-primary: #0e6b62;
+  --ig-on-primary: #ffffff;
+  --ig-primary-ink: #0b544d;
+  --ig-primary-soft: #d9eee9;
+  --ig-accent: #f0a457;
+  --ig-on-accent: #1f2a2e;
+  --ig-accent-soft: #fbe3cc;
+  --ig-success: #1c6b45;
+  --ig-success-soft: #d8efe1;
+  --ig-danger: #b23a1b;
+  --ig-danger-soft: #f8ddd3;
+  --ig-focus: #1f55c0;
+  --ig-shadow-card: 0 1px 2px rgba(31, 42, 46, 0.08), 0 4px 12px rgba(31, 42, 46, 0.06);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ig-surface: #131a1c;
+    --ig-surface-raised: #1c2528;
+    --ig-surface-sunken: #0d1214;
+    --ig-ink: #f3eee6;
+    --ig-ink-muted: #b7c0c0;
+    --ig-border: #7a8789;
+    --ig-border-subtle: #2b3638;
+    --ig-primary: #62c6b8;
+    --ig-on-primary: #0a2420;
+    --ig-primary-ink: #8fd9ce;
+    --ig-primary-soft: #1d3936;
+    --ig-accent: #f2b06f;
+    --ig-on-accent: #1f2a2e;
+    --ig-accent-soft: #3d2b1b;
+    --ig-success: #74cf9d;
+    --ig-success-soft: #173326;
+    --ig-danger: #ff9b7d;
+    --ig-danger-soft: #3d1d14;
+    --ig-focus: #8ab4ff;
+    --ig-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@theme inline {
+  --font-sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif;
+
+  --color-surface: var(--ig-surface);
+  --color-surface-raised: var(--ig-surface-raised);
+  --color-surface-sunken: var(--ig-surface-sunken);
+  --color-ink: var(--ig-ink);
+  --color-ink-muted: var(--ig-ink-muted);
+  --color-border: var(--ig-border);
+  --color-border-subtle: var(--ig-border-subtle);
+  --color-primary: var(--ig-primary);
+  --color-on-primary: var(--ig-on-primary);
+  --color-primary-ink: var(--ig-primary-ink);
+  --color-primary-soft: var(--ig-primary-soft);
+  --color-accent: var(--ig-accent);
+  --color-on-accent: var(--ig-on-accent);
+  --color-accent-soft: var(--ig-accent-soft);
+  --color-success: var(--ig-success);
+  --color-success-soft: var(--ig-success-soft);
+  --color-danger: var(--ig-danger);
+  --color-danger-soft: var(--ig-danger-soft);
+  --color-focus: var(--ig-focus);
+
+  --shadow-card: var(--ig-shadow-card);
+
+  /* Minimum size of anything clickable: 56px, beyond WCAG's 44px for trembling hands */
+  --spacing-target: 3.5rem;
+}
+
+@layer base {
+  /* Body copy never goes below 18px; captions never below 16px */
+  body {
+    font-size: 1.125rem;
+    line-height: 1.55;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+}
+
+/* Visible keyboard focus on every interactive element: 3px solid, 2px offset */
+@utility focus-ring {
+  @apply focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus;
+}
+
+@utility btn {
+  @apply focus-ring inline-flex min-h-target min-w-target items-center justify-center gap-2 rounded-full border-2
+    border-transparent px-6 py-2 text-lg leading-6 font-bold transition-colors
+    disabled:cursor-not-allowed disabled:opacity-45;
+}
+
+/* The main action of the screen: one per screen */
 @utility btn-primary {
-  @apply btn bg-blue-700 text-white hover:bg-blue-800;
+  @apply btn bg-primary text-on-primary hover:bg-primary-ink;
 }
 
 @utility btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-900 hover:bg-slate-100;
+  @apply btn border-primary bg-surface-raised text-primary-ink hover:bg-primary-soft;
+}
+
+@utility link {
+  @apply focus-ring rounded-sm font-bold text-primary-ink underline underline-offset-4;
 }
 
 @utility form-input {
-  @apply block min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-base text-slate-900
-    placeholder:text-slate-500 focus:border-blue-700 focus:outline-3 focus:outline-offset-0 focus:outline-blue-200
-    aria-invalid:border-red-700 aria-invalid:focus:outline-red-200;
+  @apply block min-h-target w-full rounded-lg border-2 border-border bg-surface-raised px-4 py-2 text-lg text-ink
+    placeholder:text-ink-muted focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus
+    aria-invalid:border-danger;
 }
 
 @utility card {
-  @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6;
+  @apply rounded-2xl border border-border-subtle bg-surface-raised p-6 shadow-card;
+}
+
+/* Status tags and pills: always an icon and a word, never the colour alone */
+@utility tag {
+  @apply inline-flex items-center gap-1 rounded-full py-1 pr-3 pl-2 text-base leading-6 font-bold text-ink;
 }
 
 @media (prefers-reduced-motion: reduce) {
