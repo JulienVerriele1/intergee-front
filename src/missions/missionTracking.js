@@ -10,6 +10,15 @@ export function isOver(mission, now = Date.now()) {
   return new Date(mission.scheduledAt).getTime() + mission.durationMinutes * 60_000 <= now
 }
 
+const REVIEW_PERIOD_MS = 14 * 24 * 60 * 60_000
+
+/**
+ * A completed mission is reviewed once per side, within 14 days from its completion (spec 007, RG-3 and RG-5).
+ */
+export function canReview(completedAt, reviewSubmitted, now = Date.now()) {
+  return Boolean(completedAt) && !reviewSubmitted && now < new Date(completedAt).getTime() + REVIEW_PERIOD_MS
+}
+
 /**
  * @returns {{label: string, tone: 'neutral'|'info'|'success'|'warning'}}
  */
