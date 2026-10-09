@@ -115,6 +115,8 @@ L'interface applique le design system **Intergee** (lisible, facile à toucher, 
 - Thème : attribut `data-theme` (`light` / `dark`) sur `<html>`, posé avant le premier affichage par le script
   d'`index.html` (choix mémorisé, sinon réglage du système) et basculé par `ThemeToggle` en haut à droite
   (`composables/useTheme.js`, mémorisé dans `localStorage`).
+- Fond : `AppBackdrop` pose, entre l'en-tête et le pied de page, les formes du design system (disque, demi-disques
+  qui se font face, pilules) en couleurs douces sur fond transparent ; décoratif (`aria-hidden`), non imprimé.
 - Dates : `DateTimePicker` (calendrier mensuel à cases de 56px, navigation au clavier, puis créneaux d'une
   demi-heure de 8 h à 20 h) remplace le `datetime-local` natif, illisible et non stylable. Même valeur
   `AAAA-MM-JJTHH:mm`, donc même validation.
