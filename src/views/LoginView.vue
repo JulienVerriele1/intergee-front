@@ -38,8 +38,8 @@ async function submit() {
 <template>
   <div class="mx-auto w-full max-w-md">
     <div class="card">
-      <h1 class="mb-1 text-2xl font-bold">Connexion</h1>
-      <p class="mb-6 text-slate-600">Accédez à votre espace Intergee.</p>
+      <h1 class="mb-1 text-3xl font-bold">Connexion</h1>
+      <p class="mb-6 text-ink-muted">Accédez à votre espace Intergee.</p>
 
       <AlertMessage v-if="errorMessage" variant="error" class="mb-6">{{ errorMessage }}</AlertMessage>
 

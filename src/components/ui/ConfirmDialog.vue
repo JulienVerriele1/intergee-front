@@ -35,11 +35,11 @@ onBeforeUnmount(() => opener?.focus?.())
   <dialog
     ref="dialog"
     :aria-labelledby="titleId"
-    class="m-auto w-[min(32rem,calc(100%-2rem))] rounded-xl border border-slate-200 bg-white p-6 shadow-xl backdrop:bg-slate-900/50"
+    class="m-auto w-[min(32rem,calc(100%-2rem))] rounded-2xl border border-border-subtle bg-surface-raised p-6 text-ink shadow-xl backdrop:bg-black/60"
     @cancel.prevent="emit('cancel')"
   >
-    <h2 :id="titleId" class="text-lg font-bold text-slate-900">{{ title }}</h2>
-    <div class="mt-2 text-slate-700"><slot /></div>
+    <h2 :id="titleId" class="text-2xl font-bold">{{ title }}</h2>
+    <div class="mt-3 text-lg"><slot /></div>
     <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
       <button type="button" class="btn-secondary" :disabled="busy" @click="emit('cancel')">Annuler</button>
       <button type="button" class="btn-primary" :disabled="busy || confirmDisabled" @click="emit('confirm')">

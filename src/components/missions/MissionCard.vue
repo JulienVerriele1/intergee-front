@@ -1,6 +1,7 @@
 <script setup>
 import { categoryLabel } from '@/constants/missionCategories'
 import { formatDateTime, formatDuration, formatEuros } from '@/utils/formatters'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   /** Mission preview: no street nor exact location, revealed only to the assigned student (spec 004) */
@@ -9,37 +10,38 @@ defineProps({
 </script>
 
 <template>
-  <article class="card flex h-full flex-col gap-3" :aria-labelledby="`mission-${mission.id}-title`">
+  <article class="card flex h-full flex-col gap-4" :aria-labelledby="`mission-${mission.id}-title`">
     <div class="flex flex-wrap items-start justify-between gap-2">
-      <h3 :id="`mission-${mission.id}-title`" class="text-lg font-semibold text-slate-900">{{ mission.title }}</h3>
+      <h3 :id="`mission-${mission.id}-title`" class="text-2xl font-bold text-ink">{{ mission.title }}</h3>
       <div class="flex flex-wrap gap-2">
-        <span v-if="mission.alreadyApplied" class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-900">
+        <span v-if="mission.alreadyApplied" class="tag bg-success-soft">
+          <AppIcon name="check" class="text-success" />
           Candidature envoyée
         </span>
-        <span class="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-900">
+        <span class="tag bg-accent-soft pl-3">
           {{ categoryLabel(mission.category) }}
         </span>
       </div>
     </div>
-    <p class="text-slate-700">{{ mission.description }}</p>
-    <dl class="mt-auto grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
+    <p class="text-ink">{{ mission.description }}</p>
+    <dl class="mt-auto grid grid-cols-1 gap-x-4 gap-y-1 text-base sm:grid-cols-2">
       <div>
-        <dt class="font-semibold text-slate-600">Quand</dt>
+        <dt class="font-bold text-ink-muted">Quand</dt>
         <dd><time :datetime="mission.scheduledAt">{{ formatDateTime(mission.scheduledAt) }}</time></dd>
       </div>
       <div>
-        <dt class="font-semibold text-slate-600">Durée</dt>
+        <dt class="font-bold text-ink-muted">Durée</dt>
         <dd>{{ formatDuration(mission.durationMinutes) }}</dd>
       </div>
       <div>
-        <dt class="font-semibold text-slate-600">Où</dt>
+        <dt class="font-bold text-ink-muted">Où</dt>
         <dd>
           {{ mission.postalCode }} {{ mission.city }}
-          <span class="text-slate-600">· {{ mission.distanceKm < 1 ? 'moins d’1 km' : `${mission.distanceKm} km` }}</span>
+          <span class="text-ink-muted">· {{ mission.distanceKm < 1 ? 'moins d’1 km' : `${mission.distanceKm} km` }}</span>
         </dd>
       </div>
       <div>
-        <dt class="font-semibold text-slate-600">Compensation</dt>
+        <dt class="font-bold text-ink-muted">Compensation</dt>
         <dd>{{ formatEuros(mission.reward) }}</dd>
       </div>
     </dl>

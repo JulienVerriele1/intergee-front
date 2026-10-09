@@ -9,24 +9,24 @@ const { isAuthenticated, role } = storeToRefs(auth)
 </script>
 
 <template>
-  <header class="border-b border-slate-200 bg-white">
+  <header class="border-b border-border-subtle bg-surface-raised">
     <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
       <RouterLink
         to="/"
-        class="flex items-center gap-2 rounded text-lg font-bold text-blue-800 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+        class="focus-ring flex min-h-target items-center gap-3 rounded-lg text-2xl font-bold text-ink"
       >
-        <img src="/favicon.svg" alt="" class="size-8" />
+        <img src="/favicon.svg" alt="" class="size-10" />
         Intergee
       </RouterLink>
       <nav v-if="isAuthenticated" aria-label="Compte" class="flex flex-wrap items-center gap-3">
         <RouterLink
           :to="{ name: 'my-missions' }"
-          class="rounded font-semibold text-blue-800 underline-offset-4 hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
-          active-class="underline"
+          class="focus-ring inline-flex min-h-target items-center rounded-full px-4 text-lg font-bold text-primary-ink underline-offset-4 hover:bg-primary-soft"
+          active-class="bg-primary-soft underline"
         >
           {{ role === ROLES.STUDENT ? 'Mes candidatures' : 'Mes missions' }}
         </RouterLink>
-        <span class="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-900">
+        <span class="rounded-full bg-accent-soft px-4 py-1 text-base font-bold text-ink">
           <span class="sr-only">Connecté en tant que </span>{{ ROLE_LABELS[role] ?? role }}
         </span>
         <button type="button" class="btn-secondary" @click="auth.logout()">Se déconnecter</button>

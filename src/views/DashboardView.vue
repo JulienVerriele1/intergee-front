@@ -19,9 +19,9 @@ const introductions = {
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold sm:text-3xl">Tableau de bord</h1>
-      <p class="mt-1 text-slate-600">{{ introductions[role] }}</p>
-      <RouterLink :to="{ name: 'my-missions' }" class="mt-2 inline-block font-semibold text-blue-800 underline">
+      <h1 class="text-3xl font-bold">Tableau de bord</h1>
+      <p class="mt-1 text-ink-muted">{{ introductions[role] }}</p>
+      <RouterLink :to="{ name: 'my-missions' }" class="mt-2 inline-block link">
         {{ role === ROLES.STUDENT ? 'Suivre mes candidatures' : 'Suivre mes missions et leurs candidats' }}
       </RouterLink>
     </div>

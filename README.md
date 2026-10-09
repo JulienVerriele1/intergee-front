@@ -99,6 +99,20 @@ partagé, et la logique métier testable vit dans des modules JS purs (`missions
 
 Les routes déclarent `meta.requiresAuth`, `meta.roles` et `meta.guestOnly` ; `router/guards.js` applique ces règles.
 
+## Design system
+
+L'interface applique le design system **Intergee** (lisible, facile à toucher, chaleureux). Les jetons vivent dans
+`src/assets/main.css` : chaque valeur est une variable `--ig-*` (thème clair, et thème sombre via
+`prefers-color-scheme`), exposée à Tailwind par `@theme`.
+
+- Couleurs : `bg-surface`, `bg-surface-raised`, `bg-surface-sunken`, `text-ink`, `text-ink-muted`, `border-border`,
+  `primary` / `on-primary` / `primary-ink` / `primary-soft`, `accent` / `accent-soft`, `success(-soft)`,
+  `danger(-soft)`, `outline-focus`. N'utilisez plus les palettes Tailwind (`slate`, `blue`…).
+- Typographie : Atkinson Hyperlegible Next (Google Fonts), texte courant à 18px, jamais moins de 16px.
+- Zones cliquables : `min-h-target` (56px) ; utilitaires `btn-primary` (une action principale par écran),
+  `btn-secondary`, `link`, `form-input`, `card`, `tag`, `focus-ring`.
+- Statuts et messages : toujours une icône (`AppIcon`) et un mot, jamais la couleur seule.
+
 ## Accessibilité et responsive
 
 - Mise en page mobile d'abord (Tailwind), cibles tactiles de 44 px minimum, `prefers-reduced-motion` respecté.
