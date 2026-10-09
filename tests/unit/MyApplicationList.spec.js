@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import MyApplicationList from '@/components/tracking/MyApplicationList.vue'
 import * as missionApi from '@/api/missionApi'
+import * as reviewApi from '@/api/reviewApi'
 import { ApiError } from '@/api/apiError'
 
 vi.mock('@/api/missionApi')
+vi.mock('@/api/reviewApi')
 
 function application(applicationStatus, missionOverrides = {}) {
   return {
@@ -22,6 +24,8 @@ function application(applicationStatus, missionOverrides = {}) {
     },
     applicationStatus,
     appliedAt: '2026-12-01T10:00:00Z',
+    completedAt: null,
+    reviewSubmitted: false,
   }
 }
 
@@ -86,6 +90,27 @@ describe('MyApplicationList', () => {
     expect(wrapper.text()).toContain('12 rue des Lilas, 59000 Lille')
     expect(wrapper.get('a[href="tel:+33320123456"]').text()).toBe('+33320123456')
     expect(wrapper.get('a[target="_blank"]').attributes('href')).toContain('mlat=50.6292')
+  })
+
+  it('reviews the beneficiary of a mission completed in the last 14 days', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-12-08T10:00:00Z'))
+    missionApi.fetchMyApplications.mockResolvedValue(page([
+      { ...application('ACCEPTED', { status: 'COMPLETED' }), completedAt: '2026-12-06T12:00:00Z' },
+    ]))
+    reviewApi.submitReview.mockResolvedValue({})
+    const wrapper = mount(MyApplicationList, { attachTo: document.body })
+    await flushPromises()
+
+    await buttonNamed(wrapper, 'Laisser un avis').trigger('click')
+    await wrapper.findAll('dialog input[type="radio"]').at(4).setValue()
+    await buttonNamed(wrapper, 'Envoyer mon avis').trigger('click')
+    await flushPromises()
+
+    expect(reviewApi.submitReview).toHaveBeenCalledWith('mission-ACCEPTED', 5)
+    expect(wrapper.text()).toContain('Merci pour votre avis')
+    vi.useRealTimers()
+    wrapper.unmount()
   })
 
   it('offers no action on a rejected application', async () => {

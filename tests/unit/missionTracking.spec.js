@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applicationStatus, isOver, publishedMissionStatus } from '@/missions/missionTracking'
+import { applicationStatus, canReview, isOver, publishedMissionStatus } from '@/missions/missionTracking'
 
 const NOW = Date.parse('2026-12-05T10:00:00Z')
 
@@ -26,6 +26,13 @@ describe('missionTracking', () => {
 
     expect(publishedMissionStatus(assigned, Date.parse('2026-12-05T09:00:00Z')).label).toBe('Attribuée à Léa')
     expect(publishedMissionStatus(assigned, NOW)).toEqual({ label: 'À confirmer', tone: 'warning' })
+  })
+
+  it('allows a review within 14 days from the completion, once', () => {
+    expect(canReview('2026-11-22T10:00:01Z', false, NOW)).toBe(true)
+    expect(canReview('2026-11-21T10:00:00Z', false, NOW)).toBe(false)
+    expect(canReview('2026-12-04T10:00:00Z', true, NOW)).toBe(false)
+    expect(canReview(null, false, NOW)).toBe(false)
   })
 
   it('words the status of an application, "Non retenue" rather than "Refusée"', () => {

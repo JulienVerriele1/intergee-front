@@ -9,6 +9,8 @@ defineProps({
   title: { type: String, required: true },
   confirmLabel: { type: String, default: 'Confirmer' },
   busy: { type: Boolean, default: false },
+  /** Keeps the confirmation disabled until the content is complete, e.g. a rating is chosen */
+  confirmDisabled: { type: Boolean, default: false },
 })
 const emit = defineEmits(['confirm', 'cancel'])
 
@@ -40,7 +42,7 @@ onBeforeUnmount(() => opener?.focus?.())
     <div class="mt-2 text-slate-700"><slot /></div>
     <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
       <button type="button" class="btn-secondary" :disabled="busy" @click="emit('cancel')">Annuler</button>
-      <button type="button" class="btn-primary" :disabled="busy" @click="emit('confirm')">
+      <button type="button" class="btn-primary" :disabled="busy || confirmDisabled" @click="emit('confirm')">
         {{ busy ? 'Envoi en cours…' : confirmLabel }}
       </button>
     </div>

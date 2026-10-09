@@ -2,8 +2,9 @@
 import { computed, ref } from 'vue'
 import { fetchAssignment, withdrawApplication } from '@/api/missionApi'
 import { missionErrorMessage } from '@/missions/missionErrors'
-import { applicationStatus } from '@/missions/missionTracking'
+import { applicationStatus, canReview } from '@/missions/missionTracking'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
+import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
 
@@ -19,6 +20,16 @@ const mapUrl = computed(() => {
   const { latitude, longitude } = assignment.value.location
   return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=17/${latitude}/${longitude}`
 })
+
+const reviewable = computed(
+  () => props.application.applicationStatus === 'ACCEPTED' && canReview(props.application.completedAt, props.application.reviewSubmitted),
+)
+const reviewing = ref(false)
+
+function onReviewed(message) {
+  reviewing.value = false
+  emit('changed', message)
+}
 
 const assignment = ref(null)
 const busy = ref(false)
@@ -93,6 +104,16 @@ function withdraw() {
           </dd>
         </div>
       </dl>
+      <button v-if="reviewable" type="button" class="btn-primary self-start" @click="reviewing = true">Laisser un avis</button>
+      <p v-else-if="application.reviewSubmitted" class="text-sm font-semibold text-green-800">Avis envoyé</p>
     </template>
+
+    <ReviewDialog
+      v-if="reviewing"
+      :mission-id="mission.id"
+      subject="le bénéficiaire de cette mission"
+      @submitted="onReviewed"
+      @cancel="reviewing = false"
+    />
   </article>
 </template>

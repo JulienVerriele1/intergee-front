@@ -2,10 +2,12 @@
 import { computed, ref } from 'vue'
 import { assignMission, completeMission, fetchApplications, fetchAssignment } from '@/api/missionApi'
 import { missionErrorMessage } from '@/missions/missionErrors'
-import { isOver, publishedMissionStatus } from '@/missions/missionTracking'
+import { canReview, isOver, publishedMissionStatus } from '@/missions/missionTracking'
 import { formatDateTime } from '@/utils/formatters'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
+import StarRating from '@/components/reviews/StarRating.vue'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
 
@@ -20,6 +22,13 @@ const titleId = computed(() => `published-${props.mission.id}-title`)
 const status = computed(() => publishedMissionStatus(props.mission))
 const canConfirm = computed(() => props.mission.status === 'ASSIGNED' && isOver(props.mission))
 const hasStudent = computed(() => ['ASSIGNED', 'COMPLETED'].includes(props.mission.status))
+const reviewable = computed(() => canReview(props.mission.completedAt, props.mission.reviewSubmitted))
+const reviewing = ref(false)
+
+function onReviewed(message) {
+  reviewing.value = false
+  emit('changed', message)
+}
 
 const candidates = ref(null)
 const assignment = ref(null)
@@ -107,6 +116,7 @@ async function confirm() {
               </span>
             </p>
             <p class="text-sm text-slate-600">{{ candidate.school }} · candidature du {{ formatDateTime(candidate.appliedAt) }}</p>
+            <StarRating :average-rating="candidate.averageRating" :review-count="candidate.reviewCount" />
           </div>
           <button type="button" class="btn-primary" @click="pendingConfirmation = { type: 'assign', candidate }">
             Choisir {{ candidate.firstName }}
@@ -139,6 +149,10 @@ async function confirm() {
       <button v-if="canConfirm" type="button" class="btn-primary self-start" @click="pendingConfirmation = { type: 'complete' }">
         Confirmer que la mission a eu lieu
       </button>
+      <button v-if="reviewable" type="button" class="btn-primary self-start" @click="reviewing = true">
+        Évaluer {{ mission.assignedStudentFirstName }}
+      </button>
+      <p v-else-if="mission.reviewSubmitted" class="text-sm font-semibold text-green-800">Avis envoyé</p>
     </div>
 
     <ConfirmDialog
@@ -162,5 +176,12 @@ async function confirm() {
     >
       La mission « {{ mission.title }} » sera marquée comme terminée. Cette confirmation est définitive.
     </ConfirmDialog>
+    <ReviewDialog
+      v-if="reviewing"
+      :mission-id="mission.id"
+      :subject="mission.assignedStudentFirstName"
+      @submitted="onReviewed"
+      @cancel="reviewing = false"
+    />
   </article>
 </template>

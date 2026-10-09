@@ -2,9 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import PublishedMissionList from '@/components/tracking/PublishedMissionList.vue'
 import * as missionApi from '@/api/missionApi'
+import * as reviewApi from '@/api/reviewApi'
 import { ApiError } from '@/api/apiError'
 
 vi.mock('@/api/missionApi')
+vi.mock('@/api/reviewApi')
 
 const NOW = new Date('2026-12-05T12:00:00Z')
 
@@ -23,6 +25,7 @@ function published(overrides = {}) {
     assignedStudentFirstName: null,
     completedAt: null,
     beneficiary: { id: 'jeanne', firstName: 'Jeanne' },
+    reviewSubmitted: false,
     ...overrides,
   }
 }
@@ -32,8 +35,8 @@ function page(items) {
 }
 
 const CANDIDATES = [
-  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING' },
-  { applicantId: 'tom', firstName: 'Tom', school: 'IUT de Lille', verified: true, appliedAt: '2026-12-01T11:00:00Z', status: 'PENDING' },
+  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING', averageRating: 4.5, reviewCount: 2 },
+  { applicantId: 'tom', firstName: 'Tom', school: 'IUT de Lille', verified: true, appliedAt: '2026-12-01T11:00:00Z', status: 'PENDING', averageRating: null, reviewCount: 0 },
 ]
 
 function buttonNamed(wrapper, name) {
@@ -97,6 +100,7 @@ describe('PublishedMissionList', () => {
     await buttonNamed(wrapper, 'Voir les candidats').trigger('click')
     await flushPromises()
     expect(wrapper.text()).toContain('Université de Lille')
+    expect(wrapper.find('[aria-label="Note : 4,5 sur 5 (2 avis)"]').exists()).toBe(true)
 
     // When: the beneficiary chooses Léa, then confirms
     await buttonNamed(wrapper, 'Choisir Léa').trigger('click')
@@ -173,6 +177,38 @@ describe('PublishedMissionList', () => {
     // Then
     expect(missionApi.completeMission).toHaveBeenCalledWith(published().id)
     expect(wrapper.text()).toContain('est terminée')
+  })
+
+  it('reviews the student of a mission completed less than 14 days ago', async () => {
+    // Given
+    missionApi.fetchMyMissions.mockResolvedValue(page([
+      published({ status: 'COMPLETED', assignedStudentFirstName: 'Léa', scheduledAt: '2026-12-04T08:00:00Z', completedAt: '2026-12-04T12:00:00Z' }),
+    ]))
+    reviewApi.submitReview.mockResolvedValue({})
+    const wrapper = await mountList()
+
+    // When
+    await buttonNamed(wrapper, 'Évaluer Léa').trigger('click')
+    await wrapper.findAll('dialog input[type="radio"]').at(3).setValue()
+    await buttonNamed(wrapper, 'Envoyer mon avis').trigger('click')
+    await flushPromises()
+
+    // Then
+    expect(reviewApi.submitReview).toHaveBeenCalledWith(published().id, 4)
+    expect(wrapper.text()).toContain('Merci pour votre avis')
+  })
+
+  it('offers no review once sent, nor after 14 days', async () => {
+    missionApi.fetchMyMissions.mockResolvedValue(page([
+      published({ id: 'm1', status: 'COMPLETED', assignedStudentFirstName: 'Léa', completedAt: '2026-12-04T12:00:00Z', reviewSubmitted: true }),
+      published({ id: 'm2', status: 'COMPLETED', assignedStudentFirstName: 'Tom', completedAt: '2026-11-01T12:00:00Z' }),
+    ]))
+
+    const wrapper = await mountList()
+
+    expect(wrapper.text()).toContain('Avis envoyé')
+    expect(hasButton(wrapper, 'Évaluer Léa')).toBe(false)
+    expect(hasButton(wrapper, 'Évaluer Tom')).toBe(false)
   })
 
   it('names the beneficiary and filters by beneficiary for a caregiver', async () => {
