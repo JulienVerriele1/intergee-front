@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { ROLE_LABELS, ROLES } from '@/constants/roles'
 import ThemeToggle from '@/components/ThemeToggle.vue'
+import BrandLogo from '@/components/BrandLogo.vue'
 
 const auth = useAuthStore()
 const { isAuthenticated, role } = storeToRefs(auth)
@@ -16,8 +17,7 @@ const { isAuthenticated, role } = storeToRefs(auth)
         to="/"
         class="order-1 focus-ring flex min-h-target items-center gap-3 rounded-lg text-2xl font-bold text-ink"
       >
-        <img src="/favicon.svg" alt="" class="size-10" />
-        Intergee
+        <BrandLogo />
       </RouterLink>
       <!-- On phones the toggle stays top right, beside the name, and the account links go below -->
       <ThemeToggle class="order-2 md:order-3" />

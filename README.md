@@ -117,6 +117,9 @@ L'interface applique le design system **Intergee** (lisible, facile à toucher, 
   (`composables/useTheme.js`, mémorisé dans `localStorage`).
 - Fond : `AppBackdrop` pose, entre l'en-tête et le pied de page, les formes du design system (disque, demi-disques
   qui se font face, pilules) en couleurs douces sur fond transparent ; décoratif (`aria-hidden`), non imprimé.
+- Logo : `BrandLogo` (en-tête). Au chargement, les deux demi-disques du symbole se rejoignent et « Inter » et « gee »
+  glissent l'un vers l'autre pour former le nom (900 ms, une fois), puis tout reste immobile ; aucune animation si
+  `prefers-reduced-motion`. Les lecteurs d'écran lisent « Intergee ».
 - Dates : `DateTimePicker` (calendrier mensuel à cases de 56px, navigation au clavier, puis créneaux d'une
   demi-heure de 8 h à 20 h) remplace le `datetime-local` natif, illisible et non stylable. Même valeur
   `AAAA-MM-JJTHH:mm`, donc même validation.
