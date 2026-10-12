@@ -69,12 +69,13 @@ describe('PublishedMissionList', () => {
     document.body.innerHTML = ''
   })
 
-  it('lists the upcoming missions with their status', async () => {
+  it('lists the retained missions by default, with their status', async () => {
     missionApi.fetchMyMissions.mockResolvedValue(page([published()]))
 
     const wrapper = await mountList()
 
-    expect(missionApi.fetchMyMissions).toHaveBeenCalledWith({ period: 'UPCOMING', page: 0, size: 20 })
+    expect(missionApi.fetchMyMissions).toHaveBeenCalledWith({ period: 'RETAINED', page: 0, size: 20 })
+    expect(buttonNamed(wrapper, 'Retenu').attributes('aria-pressed')).toBe('true')
     expect(wrapper.text()).toContain('Aide pour faire les courses')
     expect(wrapper.text()).toContain('2 candidatures')
     expect(wrapper.text()).not.toContain('Pour Jeanne')
@@ -89,6 +90,28 @@ describe('PublishedMissionList', () => {
 
     expect(missionApi.fetchMyMissions).toHaveBeenLastCalledWith({ period: 'PAST', page: 0, size: 20 })
     expect(wrapper.text()).toContain('Aucune mission passée.')
+  })
+
+  it('greys the past tab until it is selected', async () => {
+    missionApi.fetchMyMissions.mockResolvedValue(page([]))
+    const wrapper = await mountList()
+
+    expect(buttonNamed(wrapper, 'Passées').classes()).toContain('text-ink-muted')
+    expect(buttonNamed(wrapper, 'À venir').classes()).not.toContain('text-ink-muted')
+    await buttonNamed(wrapper, 'Passées').trigger('click')
+
+    expect(buttonNamed(wrapper, 'Passées').classes()).not.toContain('text-ink-muted')
+  })
+
+  it('switches to the upcoming missions', async () => {
+    missionApi.fetchMyMissions.mockResolvedValue(page([]))
+    const wrapper = await mountList()
+
+    await buttonNamed(wrapper, 'À venir').trigger('click')
+    await flushPromises()
+
+    expect(missionApi.fetchMyMissions).toHaveBeenLastCalledWith({ period: 'UPCOMING', page: 0, size: 20 })
+    expect(wrapper.text()).toContain('Aucune mission à venir.')
   })
 
   it('chooses a candidate after a confirmation', async () => {

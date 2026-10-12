@@ -1,13 +1,19 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { fetchMyApplications } from '@/api/missionApi'
+import { DEFAULT_PERIOD } from '@/missions/missionTracking'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import ApplicationCard from './ApplicationCard.vue'
 import PeriodSwitch from './PeriodSwitch.vue'
 
 const PAGE_SIZE = 20
+const EMPTY_MESSAGES = {
+  RETAINED: "Vous n'avez pas encore été retenu pour une mission.",
+  UPCOMING: 'Aucune candidature en attente. Trouvez une mission depuis le tableau de bord.',
+  PAST: 'Aucune mission passée.',
+}
 
-const period = ref('UPCOMING')
+const period = ref(DEFAULT_PERIOD)
 const page = ref(0)
 const result = ref(null)
 const status = ref('loading') // loading | ready | error
@@ -52,7 +58,7 @@ onMounted(loadApplications)
     <AlertMessage v-else-if="status === 'error'" variant="error">{{ errorMessage }}</AlertMessage>
     <template v-else>
       <p v-if="result.totalItems === 0" role="status" class="text-ink">
-        {{ period === 'UPCOMING' ? 'Aucune candidature en cours. Trouvez une mission depuis le tableau de bord.' : 'Aucune mission passée.' }}
+        {{ EMPTY_MESSAGES[period] }}
       </p>
       <ul v-else role="list" class="flex flex-col gap-4">
         <li v-for="application in result.items" :key="application.mission.id">

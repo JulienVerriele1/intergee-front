@@ -12,7 +12,9 @@ const period = defineModel({ type: String, required: true })
       type="button"
       :aria-pressed="period === option.value"
       class="focus-ring min-h-target rounded-full px-6 text-lg font-bold transition-colors"
-      :class="period === option.value ? 'bg-primary text-on-primary' : 'text-ink hover:bg-primary-soft'"
+      :class="period === option.value
+        ? 'bg-primary text-on-primary'
+        : option.muted ? 'text-ink-muted hover:bg-primary-soft hover:text-ink' : 'text-ink hover:bg-primary-soft'"
       @click="period = option.value"
     >
       {{ option.label }}

@@ -1,18 +1,24 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchMyMissions } from '@/api/missionApi'
+import { DEFAULT_PERIOD } from '@/missions/missionTracking'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import PeriodSwitch from './PeriodSwitch.vue'
 import PublishedMissionCard from './PublishedMissionCard.vue'
 
 const PAGE_SIZE = 20
+const EMPTY_MESSAGES = {
+  RETAINED: "Aucune mission avec un étudiant retenu. Choisissez un candidat dans l'onglet « À venir ».",
+  UPCOMING: 'Aucune mission à venir.',
+  PAST: 'Aucune mission passée.',
+}
 
 const props = defineProps({
   /** A caregiver sees the missions of every beneficiary they manage (spec 009, RG-1) */
   isCaregiver: { type: Boolean, default: false },
 })
 
-const period = ref('UPCOMING')
+const period = ref(DEFAULT_PERIOD)
 const page = ref(0)
 const result = ref(null)
 const status = ref('loading') // loading | ready | error
@@ -78,7 +84,7 @@ onMounted(loadMissions)
     <AlertMessage v-else-if="status === 'error'" variant="error">{{ errorMessage }}</AlertMessage>
     <template v-else>
       <p v-if="result.totalItems === 0" role="status" class="text-ink">
-        {{ period === 'UPCOMING' ? 'Aucune mission à venir.' : 'Aucune mission passée.' }}
+        {{ EMPTY_MESSAGES[period] }}
       </p>
       <ul v-else role="list" class="flex flex-col gap-4">
         <li v-for="mission in visibleMissions" :key="mission.id">

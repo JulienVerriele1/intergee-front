@@ -52,7 +52,7 @@ describe('MyApplicationList', () => {
     const wrapper = mount(MyApplicationList)
     await flushPromises()
 
-    expect(missionApi.fetchMyApplications).toHaveBeenCalledWith({ period: 'UPCOMING', page: 0, size: 20 })
+    expect(missionApi.fetchMyApplications).toHaveBeenCalledWith({ period: 'RETAINED', page: 0, size: 20 })
     expect(wrapper.text()).toContain('En attente')
     expect(wrapper.text()).toContain('Retenue')
     expect(wrapper.text()).toContain('Non retenue')
