@@ -126,8 +126,20 @@ async function confirm() {
                 · candidature du {{ formatDateTime(candidate.appliedAt) }}
               </p>
               <StarRating :average-rating="candidate.averageRating" :review-count="candidate.reviewCount" />
+              <p v-if="candidate.matchingSkills?.length" class="mt-2 font-bold text-success">
+                {{ candidate.matchingSkills.length }} compétence{{ candidate.matchingSkills.length > 1 ? 's' : '' }} demandée{{ candidate.matchingSkills.length > 1 ? 's' : '' }} pour cette mission
+              </p>
               <ul v-if="candidate.skills?.length" role="list" :aria-label="`Compétences de ${candidate.firstName}`" class="mt-2 flex flex-wrap gap-2">
-                <li v-for="skill in candidate.skills" :key="skill" class="tag bg-accent-soft">{{ skillLabel(skill) }}</li>
+                <li
+                  v-for="skill in candidate.skills"
+                  :key="skill"
+                  class="tag"
+                  :class="candidate.matchingSkills?.includes(skill) ? 'bg-success-soft' : 'bg-accent-soft pl-3'"
+                >
+                  <AppIcon v-if="candidate.matchingSkills?.includes(skill)" name="check" class="text-success" />
+                  {{ skillLabel(skill) }}
+                  <span v-if="candidate.matchingSkills?.includes(skill)" class="sr-only">(demandée pour la mission)</span>
+                </li>
               </ul>
             </div>
           </div>

@@ -81,7 +81,7 @@ describe('OpenMissionList', () => {
     const wrapper = mount(OpenMissionList)
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Aucune mission ouverte dans votre zone')
+    expect(wrapper.text()).toContain('Aucune mission ouverte dans votre zone ne demande vos compétences')
   })
 
   it('applies to a mission and offers to withdraw', async () => {

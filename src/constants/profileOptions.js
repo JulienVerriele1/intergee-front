@@ -70,6 +70,15 @@ export const SEXES = Object.freeze([
 
 const SKILL_LABELS = Object.fromEntries(SKILL_FAMILIES.flatMap((family) => family.skills).map((skill) => [skill.value, skill.label]))
 
+/**
+ * Skills a mission of this category may require: those of its own family only (spec 011, RG-2).
+ *
+ * @returns {{value: string, label: string, skills: {value: string, label: string}[]}[]} by family
+ */
+export function skillFamiliesForCategory(category) {
+  return SKILL_FAMILIES.filter((family) => family.value === category)
+}
+
 export function skillLabel(value) {
   return SKILL_LABELS[value] ?? value
 }

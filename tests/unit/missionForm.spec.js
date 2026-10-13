@@ -15,6 +15,7 @@ function validForm(overrides = {}) {
     postalCode: '59000',
     city: 'Lille',
     reward: '20,5',
+    requiredSkills: ['GROCERY_SHOPPING'],
     ...overrides,
   }
 }
@@ -68,7 +69,13 @@ describe('toPublishPayload', () => {
       durationMinutes: 90,
       location: { street: '12 rue de Lens', postalCode: '59000', city: 'Lille', latitude: 50.625, longitude: 3.063 },
       reward: 20.5,
+      requiredSkills: ['GROCERY_SHOPPING'],
     })
+  })
+
+  it('requires at least one skill once the category is chosen', () => {
+    expect(validateMissionForm(validForm({ requiredSkills: [] }), { requiresBeneficiary: false, now: NOW }))
+      .toEqual({ requiredSkills: 'Choisissez au moins une compétence nécessaire pour cette mission.' })
   })
 
   it('adds the beneficiary id for a caregiver', () => {

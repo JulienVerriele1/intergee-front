@@ -3,6 +3,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { publishMission } from '@/api/missionApi'
 import { geocodeAddress } from '@/api/geocodingApi'
 import { MISSION_CATEGORIES } from '@/constants/missionCategories'
+import { skillFamiliesForCategory } from '@/constants/profileOptions'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import FormField from '@/components/ui/FormField.vue'
 import DateTimePicker from '@/components/ui/DateTimePicker.vue'
@@ -33,6 +34,15 @@ const publishedMission = ref(null)
 const formElement = ref(null)
 
 const minScheduledAt = computed(() => toDateTimeLocalValue(new Date()))
+// Skills a mission of the chosen category may require (spec 011, RG-2)
+const skillFamilies = computed(() => (form.category ? skillFamiliesForCategory(form.category) : []))
+
+// A new category keeps only the skills it still allows
+watch(() => form.category, () => {
+  const allowed = new Set(skillFamilies.value.flatMap((family) => family.skills.map((skill) => skill.value)))
+  form.requiredSkills = form.requiredSkills.filter((skill) => allowed.has(skill))
+})
+
 const addressFilled = computed(() => form.street.trim() && /^\d{5}$/.test(form.postalCode.trim()) && form.city.trim())
 
 // Any change to the address invalidates the previously located one
@@ -154,6 +164,34 @@ async function focusFirstInvalidField() {
           </option>
         </select>
       </FormField>
+
+      <fieldset
+        v-if="skillFamilies.length > 0"
+        class="flex flex-col gap-3"
+        :aria-describedby="errors.requiredSkills ? 'required-skills-error' : 'required-skills-help'"
+      >
+        <legend class="text-lg leading-6 font-bold text-ink">
+          Compétences nécessaires <span class="text-danger" aria-hidden="true">*</span>
+        </legend>
+        <p id="required-skills-help" class="text-base text-ink-muted">
+          Choisissez au moins une compétence : la mission est proposée aux étudiants qui en possèdent une.
+        </p>
+        <div v-for="family in skillFamilies" :key="family.value" class="flex flex-col gap-1">
+          <label v-for="skill in family.skills" :key="skill.value" class="flex min-h-target items-center gap-3 text-lg">
+            <input
+              v-model="form.requiredSkills"
+              type="checkbox"
+              :value="skill.value"
+              class="size-6 shrink-0 accent-primary"
+              :aria-invalid="errors.requiredSkills ? 'true' : undefined"
+            />
+            {{ skill.label }}
+          </label>
+        </div>
+        <p v-if="errors.requiredSkills" id="required-skills-error" class="rounded-lg bg-danger-soft px-3 py-2 text-base text-ink">
+          {{ errors.requiredSkills }}
+        </p>
+      </fieldset>
 
       <FormField id="reward" v-slot="field" label="Compensation (€)" :error="errors.reward" required>
         <input

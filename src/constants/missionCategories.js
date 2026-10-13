@@ -4,6 +4,7 @@ export const MISSION_CATEGORIES = Object.freeze([
   { value: 'COMPANIONSHIP', label: 'Compagnie / discussion' },
   { value: 'IT_HELP', label: 'Aide informatique de base' },
   { value: 'GARDENING', label: 'Petits travaux de jardinage' },
+  { value: 'ACCESSIBILITY', label: 'Accessibilité (langue des signes, lecture du courrier)' },
 ])
 
 export function categoryLabel(value) {

@@ -2,6 +2,7 @@
 import { categoryLabel } from '@/constants/missionCategories'
 import { formatDateTime, formatDuration, formatEuros } from '@/utils/formatters'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { skillLabel } from '@/constants/profileOptions'
 
 defineProps({
   /** Mission preview: no street nor exact location, revealed only to the assigned student (spec 004) */
@@ -24,6 +25,25 @@ defineProps({
       </div>
     </div>
     <p class="text-ink">{{ mission.description }}</p>
+    <!-- Required skills, those of the student first (spec 011, RG-3) -->
+    <div v-if="mission.requiredSkills?.length" class="flex flex-col gap-2">
+      <p class="font-bold text-ink-muted">Compétences demandées</p>
+      <ul role="list" class="flex flex-wrap gap-2">
+        <li
+          v-for="skill in [...mission.matchingSkills, ...mission.requiredSkills.filter((required) => !mission.matchingSkills.includes(required))]"
+          :key="skill"
+          class="tag"
+          :class="mission.matchingSkills.includes(skill) ? 'bg-success-soft' : 'bg-surface-sunken pl-3'"
+        >
+          <AppIcon v-if="mission.matchingSkills.includes(skill)" name="check" class="text-success" />
+          {{ skillLabel(skill) }}
+          <span v-if="mission.matchingSkills.includes(skill)" class="sr-only">(vous avez cette compétence)</span>
+        </li>
+      </ul>
+      <p v-if="mission.matchingSkills.length > 0" class="text-base font-bold text-success">
+        Correspond à vos compétences
+      </p>
+    </div>
     <dl class="mt-auto grid grid-cols-1 gap-x-4 gap-y-1 text-base sm:grid-cols-2">
       <div>
         <dt class="font-bold text-ink-muted">Quand</dt>

@@ -83,7 +83,9 @@ onMounted(loadMissions)
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h2 id="open-missions-title" class="text-2xl font-bold">Missions ouvertes près de chez vous</h2>
-        <p class="text-ink-muted">L'adresse exacte est communiquée à l'étudiant retenu.</p>
+        <p class="text-ink-muted">
+          Missions qui demandent au moins une de vos compétences. L'adresse exacte est communiquée à l'étudiant retenu.
+        </p>
       </div>
       <div class="flex flex-col gap-1.5 sm:w-72">
         <label for="category-filter" class="text-base font-bold text-ink">Catégorie</label>
@@ -101,7 +103,7 @@ onMounted(loadMissions)
     <template v-else>
       <p role="status" class="mb-4 text-ink">
         {{ result.totalItems === 0
-          ? 'Aucune mission ouverte dans votre zone pour le moment.'
+          ? 'Aucune mission ouverte dans votre zone ne demande vos compétences pour le moment. Vous pouvez en ajouter dans « Mon profil ».'
           : `${result.totalItems} mission${result.totalItems > 1 ? 's' : ''} dans votre zone` }}
       </p>
       <ul v-if="result.items.length > 0" class="grid gap-4 md:grid-cols-2" role="list">

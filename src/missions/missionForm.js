@@ -25,6 +25,7 @@ export function emptyMissionForm() {
     postalCode: '',
     city: '',
     reward: '',
+    requiredSkills: [],
   }
 }
 
@@ -44,6 +45,9 @@ export function validateMissionForm(form, { requiresBeneficiary, now = new Date(
   }
   if (!form.category) {
     errors.category = 'Choisissez une catégorie.'
+  }
+  if (form.category && form.requiredSkills.length === 0) {
+    errors.requiredSkills = 'Choisissez au moins une compétence nécessaire pour cette mission.'
   }
   if (!form.description.trim()) {
     errors.description = 'La description est obligatoire.'
@@ -95,6 +99,7 @@ export function toPublishPayload(form, location, { requiresBeneficiary }) {
       longitude: location.longitude,
     },
     reward: parseReward(String(form.reward).trim()),
+    requiredSkills: [...form.requiredSkills],
   }
 }
 

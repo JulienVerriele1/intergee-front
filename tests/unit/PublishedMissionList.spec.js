@@ -37,8 +37,8 @@ function page(items) {
 }
 
 const CANDIDATES = [
-  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING', averageRating: 4.5, reviewCount: 2, age: 21, studyLevel: 'BAC_3', skills: ['CONVERSATION', 'SMARTPHONE_TABLET'], hasPhoto: true },
-  { applicantId: 'tom', firstName: 'Tom', school: 'IUT de Lille', verified: true, appliedAt: '2026-12-01T11:00:00Z', status: 'PENDING', averageRating: null, reviewCount: 0, age: 19, studyLevel: 'BAC_1', skills: ['GARDENING'], hasPhoto: false },
+  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING', averageRating: 4.5, reviewCount: 2, age: 21, studyLevel: 'BAC_3', skills: ['CONVERSATION', 'SMARTPHONE_TABLET'], hasPhoto: true, matchingSkills: ['SMARTPHONE_TABLET'] },
+  { applicantId: 'tom', firstName: 'Tom', school: 'IUT de Lille', verified: true, appliedAt: '2026-12-01T11:00:00Z', status: 'PENDING', averageRating: null, reviewCount: 0, age: 19, studyLevel: 'BAC_1', skills: ['GARDENING'], hasPhoto: false, matchingSkills: [] },
 ]
 
 function buttonNamed(wrapper, name) {
@@ -130,6 +130,8 @@ describe('PublishedMissionList', () => {
     expect(wrapper.text()).toContain('Léa, 21 ans')
     expect(wrapper.text()).toContain('Bac +3')
     expect(wrapper.get('[aria-label="Compétences de Léa"]').text()).toContain('Utiliser un smartphone ou une tablette')
+    expect(wrapper.get('[aria-label="Compétences de Léa"]').text()).toContain('(demandée pour la mission)')
+    expect(wrapper.text()).toContain('1 compétence demandée pour cette mission')
     expect(wrapper.find('[aria-label="Tom n\'a pas encore de photo"]').exists()).toBe(true)
 
     // When: the beneficiary chooses Léa, then confirms
