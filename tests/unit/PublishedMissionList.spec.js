@@ -3,10 +3,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 import PublishedMissionList from '@/components/tracking/PublishedMissionList.vue'
 import * as missionApi from '@/api/missionApi'
 import * as reviewApi from '@/api/reviewApi'
+import * as profileApi from '@/api/profileApi'
 import { ApiError } from '@/api/apiError'
 
 vi.mock('@/api/missionApi')
 vi.mock('@/api/reviewApi')
+vi.mock('@/api/profileApi')
 
 const NOW = new Date('2026-12-05T12:00:00Z')
 
@@ -35,8 +37,8 @@ function page(items) {
 }
 
 const CANDIDATES = [
-  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING', averageRating: 4.5, reviewCount: 2 },
-  { applicantId: 'tom', firstName: 'Tom', school: 'IUT de Lille', verified: true, appliedAt: '2026-12-01T11:00:00Z', status: 'PENDING', averageRating: null, reviewCount: 0 },
+  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING', averageRating: 4.5, reviewCount: 2, age: 21, studyLevel: 'BAC_3', skills: ['CONVERSATION', 'SMARTPHONE_TABLET'], hasPhoto: true },
+  { applicantId: 'tom', firstName: 'Tom', school: 'IUT de Lille', verified: true, appliedAt: '2026-12-01T11:00:00Z', status: 'PENDING', averageRating: null, reviewCount: 0, age: 19, studyLevel: 'BAC_1', skills: ['GARDENING'], hasPhoto: false },
 ]
 
 function buttonNamed(wrapper, name) {
@@ -60,6 +62,7 @@ async function mountList(props = {}) {
 describe('PublishedMissionList', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    profileApi.fetchStudentPhoto.mockRejectedValue(new Error('No photo in these tests'))
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(NOW)
   })
@@ -124,6 +127,10 @@ describe('PublishedMissionList', () => {
     await flushPromises()
     expect(wrapper.text()).toContain('Université de Lille')
     expect(wrapper.find('[aria-label="Note : 4,5 sur 5 (2 avis)"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Léa, 21 ans')
+    expect(wrapper.text()).toContain('Bac +3')
+    expect(wrapper.get('[aria-label="Compétences de Léa"]').text()).toContain('Utiliser un smartphone ou une tablette')
+    expect(wrapper.find('[aria-label="Tom n\'a pas encore de photo"]').exists()).toBe(true)
 
     // When: the beneficiary chooses Léa, then confirms
     await buttonNamed(wrapper, 'Choisir Léa').trigger('click')

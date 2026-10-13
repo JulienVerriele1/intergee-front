@@ -8,6 +8,8 @@ import AlertMessage from '@/components/ui/AlertMessage.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
 import StarRating from '@/components/reviews/StarRating.vue'
+import StudentPhoto from '@/components/ui/StudentPhoto.vue'
+import { skillLabel, studyLevelLabel } from '@/constants/profileOptions'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -109,16 +111,25 @@ async function confirm() {
           :key="candidate.applicantId"
           class="flex flex-col gap-2 rounded-lg border border-border-subtle p-3 sm:flex-row sm:items-center sm:justify-between"
         >
-          <div>
-            <p class="font-bold">
-              {{ candidate.firstName }}
-              <span v-if="candidate.verified" class="tag ml-1 bg-primary-soft align-middle">
-                <AppIcon name="shield" class="text-primary-ink" />
-                Étudiant vérifié
-              </span>
-            </p>
-            <p class="text-base text-ink-muted">{{ candidate.school }} · candidature du {{ formatDateTime(candidate.appliedAt) }}</p>
-            <StarRating :average-rating="candidate.averageRating" :review-count="candidate.reviewCount" />
+          <div class="flex items-start gap-3">
+            <StudentPhoto :student-id="candidate.applicantId" :first-name="candidate.firstName" :has-photo="candidate.hasPhoto" :size="64" />
+            <div>
+              <p class="font-bold">
+                {{ candidate.firstName }}<template v-if="candidate.age">, {{ candidate.age }} ans</template>
+                <span v-if="candidate.verified" class="tag ml-1 bg-primary-soft align-middle">
+                  <AppIcon name="shield" class="text-primary-ink" />
+                  Étudiant vérifié
+                </span>
+              </p>
+              <p class="text-base text-ink-muted">
+                {{ candidate.school }}<template v-if="candidate.studyLevel"> · {{ studyLevelLabel(candidate.studyLevel) }}</template>
+                · candidature du {{ formatDateTime(candidate.appliedAt) }}
+              </p>
+              <StarRating :average-rating="candidate.averageRating" :review-count="candidate.reviewCount" />
+              <ul v-if="candidate.skills?.length" role="list" :aria-label="`Compétences de ${candidate.firstName}`" class="mt-2 flex flex-wrap gap-2">
+                <li v-for="skill in candidate.skills" :key="skill" class="tag bg-accent-soft">{{ skillLabel(skill) }}</li>
+              </ul>
+            </div>
           </div>
           <button type="button" class="btn-primary" @click="pendingConfirmation = { type: 'assign', candidate }">
             Choisir {{ candidate.firstName }}
@@ -138,16 +149,19 @@ async function confirm() {
       >
         Voir le contact de {{ mission.assignedStudentFirstName }}
       </button>
-      <dl v-else class="grid grid-cols-1 gap-1 rounded-lg bg-surface-sunken p-3 text-base sm:grid-cols-2">
-        <div>
-          <dt class="font-bold text-ink-muted">Étudiant</dt>
-          <dd>{{ assignment.student.firstName }} {{ assignment.student.lastName }} · {{ assignment.student.school }}</dd>
-        </div>
-        <div>
-          <dt class="font-bold text-ink-muted">Email</dt>
-          <dd><a :href="`mailto:${assignment.student.email}`" class="link">{{ assignment.student.email }}</a></dd>
-        </div>
-      </dl>
+      <div v-else class="flex items-center gap-3 rounded-lg bg-surface-sunken p-3">
+        <StudentPhoto :student-id="assignment.student.id" :first-name="assignment.student.firstName" :size="64" />
+        <dl class="grid flex-1 grid-cols-1 gap-1 text-base sm:grid-cols-2">
+          <div>
+            <dt class="font-bold text-ink-muted">Étudiant</dt>
+            <dd>{{ assignment.student.firstName }} {{ assignment.student.lastName }} · {{ assignment.student.school }}</dd>
+          </div>
+          <div>
+            <dt class="font-bold text-ink-muted">Email</dt>
+            <dd><a :href="`mailto:${assignment.student.email}`" class="link">{{ assignment.student.email }}</a></dd>
+          </div>
+        </dl>
+      </div>
       <button v-if="canConfirm" type="button" class="btn-primary self-start" @click="pendingConfirmation = { type: 'complete' }">
         Confirmer que la mission a eu lieu
       </button>

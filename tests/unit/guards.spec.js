@@ -27,6 +27,12 @@ describe('resolveNavigation', () => {
     expect(resolveNavigation(route({ guestOnly: true }), student)).toEqual({ name: 'dashboard' })
   })
 
+  it('sends a user to the route their role is redirected to', () => {
+    const meta = { requiresAuth: true, redirectByRole: { BENEFICIARY: 'my-missions' } }
+    expect(resolveNavigation(route(meta), { isAuthenticated: true, role: 'BENEFICIARY' })).toEqual({ name: 'my-missions' })
+    expect(resolveNavigation(route(meta), student)).toBe(true)
+  })
+
   it('lets anybody reach a public page', () => {
     expect(resolveNavigation(route({}), guest)).toBe(true)
   })

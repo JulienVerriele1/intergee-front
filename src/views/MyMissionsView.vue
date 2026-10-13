@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores/auth'
 import { ROLES } from '@/constants/roles'
 import MyApplicationList from '@/components/tracking/MyApplicationList.vue'
 import PublishedMissionList from '@/components/tracking/PublishedMissionList.vue'
-import ReceivedReviews from '@/components/reviews/ReceivedReviews.vue'
 
 const { role } = storeToRefs(useAuthStore())
 </script>
@@ -19,7 +18,6 @@ const { role } = storeToRefs(useAuthStore())
           : 'Choisissez un étudiant parmi les candidats, puis confirmez la mission une fois réalisée.' }}
       </p>
     </div>
-    <ReceivedReviews :show-names="role === ROLES.CAREGIVER" />
     <MyApplicationList v-if="role === ROLES.STUDENT" />
     <PublishedMissionList v-else :is-caregiver="role === ROLES.CAREGIVER" />
   </div>

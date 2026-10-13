@@ -2,12 +2,12 @@
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
-import { ROLE_LABELS, ROLES } from '@/constants/roles'
+import { ROLES } from '@/constants/roles'
+import AccountMenu from '@/components/AccountMenu.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import BrandLogo from '@/components/BrandLogo.vue'
 
-const auth = useAuthStore()
-const { isAuthenticated, role } = storeToRefs(auth)
+const { isAuthenticated, role } = storeToRefs(useAuthStore())
 </script>
 
 <template>
@@ -33,10 +33,8 @@ const { isAuthenticated, role } = storeToRefs(auth)
         >
           {{ role === ROLES.STUDENT ? 'Mes candidatures' : 'Mes missions' }}
         </RouterLink>
-        <span class="rounded-full bg-accent-soft px-4 py-1 text-base font-bold text-ink">
-          <span class="sr-only">Connecté en tant que </span>{{ ROLE_LABELS[role] ?? role }}
-        </span>
-        <button type="button" class="btn-secondary" @click="auth.logout()">Se déconnecter</button>
+        <!-- Burger menu: role, profile (students), received reviews and logout (spec 010) -->
+        <AccountMenu />
       </nav>
     </div>
   </header>

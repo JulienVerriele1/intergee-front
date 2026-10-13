@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import FormField from '@/components/ui/FormField.vue'
@@ -85,6 +85,11 @@ async function submit() {
           {{ submitting ? 'Connexion…' : 'Se connecter' }}
         </button>
       </form>
+    </div>
+
+    <div class="card mt-6 flex flex-col items-center gap-3 text-center">
+      <p class="text-lg">Pas encore de compte ?</p>
+      <RouterLink :to="{ name: 'register' }" class="btn-secondary w-full">Créer un compte</RouterLink>
     </div>
   </div>
 </template>

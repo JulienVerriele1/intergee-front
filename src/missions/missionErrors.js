@@ -1,4 +1,4 @@
-// Explains a refused action on a mission (specs 005 to 009) or a review (spec 007) from the business code of the API error
+// Explains a refused action on a mission (specs 005 to 009), a review (spec 007) or a profile (spec 010) from the business code of the API error
 const MESSAGES = {
   STUDENT_NOT_VERIFIED: 'Votre compte étudiant doit être vérifié avant de pouvoir postuler.',
   MISSION_NOT_FOUND: "Cette mission n'existe plus.",
@@ -20,6 +20,13 @@ const MESSAGES = {
   ALREADY_REVIEWED: 'Cette mission a déjà été évaluée.',
   REVIEWS_NOT_VISIBLE: "Ces avis ne vous sont pas accessibles.",
   USER_NOT_FOUND: "Cette personne n'existe plus.",
+  PROFILE_INCOMPLETE: 'Complétez votre profil (photo, compétences, date de naissance, adresse et niveau d’études) dans « Mon profil » avant de postuler.',
+  PROFILE_NOT_FOUND: "Votre profil étudiant est introuvable. Contactez le support.",
+  BIRTH_DATE_LOCKED: 'Votre date de naissance est déjà enregistrée et ne peut plus être modifiée.',
+  UNDERAGE: 'Il faut avoir au moins 18 ans pour proposer son aide sur Intergee.',
+  UNSUPPORTED_PHOTO_FORMAT: 'La photo doit être au format JPEG ou PNG.',
+  PHOTO_TOO_LARGE: 'La photo ne doit pas dépasser 5 Mo.',
+  UNREADABLE_PHOTO: 'Ce fichier ne peut pas être lu comme une image.',
 }
 
 export function missionErrorMessage(error) {

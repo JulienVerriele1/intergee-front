@@ -91,7 +91,7 @@ async function focusFirstInvalidField() {
 
 <template>
   <section aria-labelledby="publish-title" class="card">
-    <h2 id="publish-title" class="mb-1 text-2xl font-bold">Publier une mission</h2>
+    <h2 id="publish-title" class="mb-1 text-2xl font-bold">Détails de la mission</h2>
     <p class="mb-6 text-ink-muted">
       Décrivez la tâche à réaliser. Les champs marqués <span aria-hidden="true" class="text-danger">*</span>
       <span class="sr-only">d'un astérisque</span> sont obligatoires.

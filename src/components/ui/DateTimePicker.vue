@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import {
   DAY_PARTS,
   WEEKDAYS,
@@ -16,7 +16,8 @@ import {
 import AppIcon from './AppIcon.vue'
 
 /**
- * Date and time picker of the design system: a month calendar with 56px days, then half-hour slots.
+ * Date and time picker of the design system: a field that opens a popover with a month calendar
+ * (56px days), then half-hour slots. Choosing a slot closes it.
  * Replaces the native datetime-local input, whose tiny segments and browser-drawn popup cannot be styled.
  * v-model: "YYYY-MM-DDTHH:mm" (local time), empty until both a day and a slot are chosen.
  */
@@ -43,6 +44,10 @@ const viewMonth = ref(initial.getMonth())
 // Roving focus: the only day reachable with Tab, moved with the arrow keys
 const focusedKey = ref(selectedDay.value || todayKey.value)
 const grid = ref(null)
+const root = ref(null)
+const trigger = ref(null)
+const isOpen = ref(false)
+const popoverId = computed(() => `${props.id}-calendar`)
 
 const weeks = computed(() => monthWeeks(viewYear.value, viewMonth.value))
 const monthLabel = computed(() => formatMonth(viewYear.value, viewMonth.value))
@@ -76,6 +81,46 @@ const summary = computed(() => {
   const day = formatLongDate(parseDateKey(selectedDay.value))
   return selectedTime.value ? `Le ${day} à ${formatTime(selectedTime.value)}` : `Le ${day}. Choisissez maintenant une heure.`
 })
+
+const fieldText = computed(() =>
+  model.value ? `${formatLongDate(parseDateKey(selectedDay.value))} à ${formatTime(selectedTime.value)}` : '',
+)
+
+async function open() {
+  isOpen.value = true
+  document.addEventListener('pointerdown', closeOnOutsideClick)
+  await nextTick()
+  grid.value?.querySelector('[tabindex="0"]')?.focus()
+}
+
+function close({ restoreFocus = true } = {}) {
+  isOpen.value = false
+  document.removeEventListener('pointerdown', closeOnOutsideClick)
+  if (restoreFocus) {
+    trigger.value?.focus()
+  }
+}
+
+function closeOnOutsideClick(event) {
+  if (!root.value?.contains(event.target)) {
+    close({ restoreFocus: false })
+  }
+}
+
+function closeOnEscape(event) {
+  if (isOpen.value) {
+    // Escape closes the calendar only, not a dialog the form may sit in
+    event.stopPropagation()
+    close()
+  }
+}
+
+function selectTime(time) {
+  selectedTime.value = time
+  close()
+}
+
+onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOnOutsideClick))
 
 watch([selectedDay, selectedTime], ([day, time]) => {
   model.value = day && time ? `${day}T${time}` : ''
@@ -138,101 +183,116 @@ function dayLabel(date) {
 </script>
 
 <template>
-  <div
-    :id="id"
-    role="group"
-    :aria-label="label"
-    :aria-describedby="describedBy"
-    :aria-invalid="invalid"
-    tabindex="-1"
-    class="flex flex-col gap-6 rounded-2xl outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus border-2 bg-surface-raised p-4 sm:p-6"
-    :class="invalid ? 'border-danger' : 'border-border'"
-  >
-    <div class="flex flex-col gap-3">
-      <div class="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          class="btn-secondary px-0"
-          :disabled="!canGoBack"
-          aria-label="Mois précédent"
-          @click="showMonth(viewYear, viewMonth - 1)"
-        >
-          <AppIcon name="chevron-left" :size="24" />
-        </button>
-        <p class="text-2xl font-bold first-letter:uppercase" aria-live="polite">{{ monthLabel }}</p>
-        <button type="button" class="btn-secondary px-0" aria-label="Mois suivant" @click="showMonth(viewYear, viewMonth + 1)">
-          <AppIcon name="chevron-right" :size="24" />
-        </button>
-      </div>
+  <div ref="root" class="relative" @keydown.esc="closeOnEscape">
+    <button
+      :id="id"
+      ref="trigger"
+      type="button"
+      class="form-input flex items-center justify-between gap-3 text-left"
+      aria-haspopup="dialog"
+      :aria-expanded="isOpen"
+      :aria-controls="popoverId"
+      :aria-describedby="describedBy"
+      :aria-invalid="invalid"
+      @click="isOpen ? close() : open()"
+    >
+      <span class="block" :class="fieldText ? 'first-letter:uppercase' : 'text-ink-muted'">{{ fieldText || 'Choisir une date et une heure' }}</span>
+      <AppIcon name="calendar" :size="24" class="text-primary-ink" />
+    </button>
 
-      <table ref="grid" class="w-full table-fixed border-separate border-spacing-1" :aria-label="`Jours de ${monthLabel}`">
-        <thead>
-          <tr>
-            <th v-for="weekday in WEEKDAYS" :key="weekday.long" scope="col" class="pb-1 text-base font-bold text-ink-muted">
-              <abbr :title="weekday.long" class="no-underline">{{ weekday.short }}</abbr>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(week, weekIndex) in weeks" :key="weekIndex">
-            <td v-for="(date, dayIndex) in week" :key="dayIndex" class="p-0">
-              <button
-                v-if="date"
-                type="button"
-                :data-day="dateKey(date)"
-                :tabindex="dateKey(date) === tabbableKey ? 0 : -1"
-                :aria-pressed="dateKey(date) === selectedDay"
-                :aria-disabled="isPast(dateKey(date)) || undefined"
-                :aria-label="dayLabel(date)"
-                :aria-current="dateKey(date) === todayKey ? 'date' : undefined"
-                class="focus-ring flex aspect-square min-h-target w-full items-center justify-center rounded-full text-xl font-bold transition-colors"
-                :class="[
-                  dateKey(date) === selectedDay
-                    ? 'bg-primary text-on-primary'
-                    : isPast(dateKey(date))
-                      ? 'cursor-not-allowed font-normal text-ink-muted opacity-60'
-                      : 'text-ink hover:bg-primary-soft',
-                  dateKey(date) === todayKey && dateKey(date) !== selectedDay ? 'ring-2 ring-accent ring-inset' : '',
-                ]"
-                @click="selectDay(dateKey(date))"
-                @keydown="moveFocus($event, dateKey(date))"
-              >
-                {{ date.getDate() }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <fieldset class="flex flex-col gap-4" :disabled="!selectedDay">
-      <legend class="mb-2 text-lg font-bold">Heure</legend>
-      <div v-for="part in dayParts" :key="part.label" role="group" :aria-label="part.label" class="flex flex-col gap-2">
-        <p class="text-base font-bold text-ink-muted" aria-hidden="true">{{ part.label }}</p>
-        <div class="grid grid-cols-3 gap-3 sm:grid-cols-4">
+    <div
+      v-if="isOpen"
+      :id="popoverId"
+      role="dialog"
+      :aria-label="label"
+      class="absolute top-full left-0 z-20 mt-2 flex w-full max-w-md flex-col gap-6 rounded-2xl border-2 border-border bg-surface-raised p-4 shadow-card sm:p-6"
+    >
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-3">
           <button
-            v-for="slot in part.slots"
-            :key="slot.time"
             type="button"
-            :aria-pressed="slot.time === selectedTime"
-            :disabled="!slot.available"
-            class="focus-ring min-h-target rounded-full border-2 text-lg font-bold transition-colors disabled:cursor-not-allowed disabled:border-border-subtle disabled:font-normal disabled:text-ink-muted"
-            :class="slot.time === selectedTime ? 'border-primary bg-primary text-on-primary' : 'border-border bg-surface-raised text-ink hover:bg-primary-soft'"
-            @click="selectedTime = slot.time"
+            class="btn-secondary px-0"
+            :disabled="!canGoBack"
+            aria-label="Mois précédent"
+            @click="showMonth(viewYear, viewMonth - 1)"
           >
-            {{ slot.label }}
+            <AppIcon name="chevron-left" :size="24" />
+          </button>
+          <p class="text-2xl font-bold first-letter:uppercase" aria-live="polite">{{ monthLabel }}</p>
+          <button type="button" class="btn-secondary px-0" aria-label="Mois suivant" @click="showMonth(viewYear, viewMonth + 1)">
+            <AppIcon name="chevron-right" :size="24" />
           </button>
         </div>
-      </div>
-    </fieldset>
 
-    <p
-      class="flex items-start gap-2 rounded-lg px-4 py-3 text-lg"
-      :class="selectedDay && selectedTime ? 'bg-primary-soft font-bold' : 'bg-surface-sunken'"
-      aria-live="polite"
-    >
-      <AppIcon :name="selectedDay && selectedTime ? 'check' : 'clock'" :size="24" class="mt-0.5 text-primary-ink" />
-      <span>{{ summary }}</span>
-    </p>
+        <table ref="grid" class="w-full table-fixed border-separate border-spacing-1" :aria-label="`Jours de ${monthLabel}`">
+          <thead>
+            <tr>
+              <th v-for="weekday in WEEKDAYS" :key="weekday.long" scope="col" class="pb-1 text-base font-bold text-ink-muted">
+                <abbr :title="weekday.long" class="no-underline">{{ weekday.short }}</abbr>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(week, weekIndex) in weeks" :key="weekIndex">
+              <td v-for="(date, dayIndex) in week" :key="dayIndex" class="p-0">
+                <button
+                  v-if="date"
+                  type="button"
+                  :data-day="dateKey(date)"
+                  :tabindex="dateKey(date) === tabbableKey ? 0 : -1"
+                  :aria-pressed="dateKey(date) === selectedDay"
+                  :aria-disabled="isPast(dateKey(date)) || undefined"
+                  :aria-label="dayLabel(date)"
+                  :aria-current="dateKey(date) === todayKey ? 'date' : undefined"
+                  class="focus-ring flex aspect-square min-h-target w-full items-center justify-center rounded-full text-xl font-bold transition-colors"
+                  :class="[
+                    dateKey(date) === selectedDay
+                      ? 'bg-primary text-on-primary'
+                      : isPast(dateKey(date))
+                        ? 'cursor-not-allowed font-normal text-ink-muted opacity-60'
+                        : 'text-ink hover:bg-primary-soft',
+                    dateKey(date) === todayKey && dateKey(date) !== selectedDay ? 'ring-2 ring-accent ring-inset' : '',
+                  ]"
+                  @click="selectDay(dateKey(date))"
+                  @keydown="moveFocus($event, dateKey(date))"
+                >
+                  {{ date.getDate() }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <fieldset class="flex flex-col gap-4" :disabled="!selectedDay">
+        <legend class="mb-2 text-lg font-bold">Heure</legend>
+        <div v-for="part in dayParts" :key="part.label" role="group" :aria-label="part.label" class="flex flex-col gap-2">
+          <p class="text-base font-bold text-ink-muted" aria-hidden="true">{{ part.label }}</p>
+          <div class="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            <button
+              v-for="slot in part.slots"
+              :key="slot.time"
+              type="button"
+              :aria-pressed="slot.time === selectedTime"
+              :disabled="!slot.available"
+              class="focus-ring min-h-target rounded-full border-2 text-lg font-bold transition-colors disabled:cursor-not-allowed disabled:border-border-subtle disabled:font-normal disabled:text-ink-muted"
+              :class="slot.time === selectedTime ? 'border-primary bg-primary text-on-primary' : 'border-border bg-surface-raised text-ink hover:bg-primary-soft'"
+              @click="selectTime(slot.time)"
+            >
+              {{ slot.label }}
+            </button>
+          </div>
+        </div>
+      </fieldset>
+
+      <p
+        class="flex items-start gap-2 rounded-lg px-4 py-3 text-lg"
+        :class="selectedDay && selectedTime ? 'bg-primary-soft font-bold' : 'bg-surface-sunken'"
+        aria-live="polite"
+      >
+        <AppIcon :name="selectedDay && selectedTime ? 'check' : 'clock'" :size="24" class="mt-0.5 text-primary-ink" />
+        <span>{{ summary }}</span>
+      </p>
+    </div>
   </div>
 </template>

@@ -16,6 +16,7 @@ async function mountLoginView(initialPath = '/login') {
       { path: '/login', component: LoginView },
       { path: '/', name: 'dashboard', component: { template: '<p>dashboard</p>' } },
       { path: '/elsewhere', component: { template: '<p>elsewhere</p>' } },
+      { path: '/inscription', name: 'register', component: { template: '<p>inscription</p>' } },
     ],
   })
   await router.push(initialPath)

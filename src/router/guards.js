@@ -1,6 +1,7 @@
 /**
  * Pure navigation rule, kept separate from the router to be unit-tested.
- * Route meta: requiresAuth (boolean), roles (allowed roles), guestOnly (login page).
+ * Route meta: requiresAuth (boolean), roles (allowed roles), guestOnly (login page),
+ * redirectByRole (route name to show instead, by role).
  *
  * @returns {true | import('vue-router').RouteLocationRaw}
  */
@@ -13,6 +14,10 @@ export function resolveNavigation(to, auth) {
   }
   if (to.meta.roles && !to.meta.roles.includes(auth.role)) {
     return { name: 'forbidden' }
+  }
+  const redirectName = to.meta.redirectByRole?.[auth.role]
+  if (redirectName) {
+    return { name: redirectName }
   }
   return true
 }

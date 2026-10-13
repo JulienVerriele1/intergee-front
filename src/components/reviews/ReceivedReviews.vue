@@ -7,10 +7,11 @@ import { formatDateTime } from '@/utils/formatters'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import StarRating from './StarRating.vue'
 
-/** Reputation of the user, or of every beneficiary a caregiver manages, at the top of "Mes missions" (spec 007, Q7). */
+/** Reputation of the user, or of every beneficiary a caregiver manages, in the account menu (spec 007, Q7). */
 defineProps({
   showNames: { type: Boolean, default: false },
 })
+const emit = defineEmits(['loaded'])
 
 const reputations = ref([])
 const details = ref({}) // userId -> page of reviews
@@ -19,6 +20,7 @@ const errorMessage = ref('')
 async function load() {
   try {
     reputations.value = await fetchMyReputations()
+    emit('loaded', reputations.value)
   } catch (error) {
     errorMessage.value = missionErrorMessage(error)
   }
@@ -41,7 +43,7 @@ onMounted(load)
 </script>
 
 <template>
-  <section v-if="reputations.length > 0 || errorMessage" aria-labelledby="received-reviews-title" class="card flex flex-col gap-3">
+  <section v-if="reputations.length > 0 || errorMessage" aria-labelledby="received-reviews-title" class="flex flex-col gap-3">
     <h2 id="received-reviews-title" class="text-lg font-bold">Avis reçus</h2>
     <AlertMessage v-if="errorMessage" variant="error">{{ errorMessage }}</AlertMessage>
     <ul role="list" class="flex flex-col gap-3">
