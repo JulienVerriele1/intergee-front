@@ -1,0 +1,23 @@
+# DOMAIN comes from the environment (deploy/.env of the API repository). Caddy obtains its certificate itself.
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Same paths as the Vite proxy in development: /api is removed before reaching the API
+	handle_path /api/* {
+		reverse_proxy backend:8080
+	}
+
+	# Single-page application: unknown paths load index.html, and the router takes over
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
