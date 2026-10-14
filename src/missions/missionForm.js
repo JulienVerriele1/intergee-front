@@ -1,3 +1,5 @@
+import { formatEuros } from '@/utils/formatters'
+
 // Business limits mirrored from spec 003, for immediate feedback: the backend stays the reference.
 export const MIN_DURATION_MINUTES = 15
 export const MAX_DURATION_MINUTES = 240
@@ -11,7 +13,7 @@ export const DURATION_OPTIONS = Array.from(
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const POSTAL_CODE_PATTERN = /^\d{5}$/
-const REWARD_PATTERN = /^\d+([.,]\d{1,2})?$/
+const WAGE_PATTERN = /^\d+([.,]\d{1,2})?$/
 
 export function emptyMissionForm() {
   return {
@@ -24,16 +26,17 @@ export function emptyMissionForm() {
     street: '',
     postalCode: '',
     city: '',
-    reward: '',
+    hourlyNetWage: '',
     requiredSkills: [],
   }
 }
 
 /**
- * @param requiresBeneficiary true for a caregiver, who publishes on behalf of a managed beneficiary
+ * @param requiresBeneficiary  true for a caregiver, who publishes on behalf of a managed beneficiary
+ * @param minimumHourlyNetWage net SMIC with paid leave, when known (spec 013, RG-2): the server checks it anyway
  * @returns {Record<string, string>} error message by field name, empty when the form is valid
  */
-export function validateMissionForm(form, { requiresBeneficiary, now = new Date() }) {
+export function validateMissionForm(form, { requiresBeneficiary, minimumHourlyNetWage = null, now = new Date() }) {
   const errors = {}
   if (requiresBeneficiary && !UUID_PATTERN.test(form.beneficiaryId.trim())) {
     errors.beneficiaryId = "Saisissez l'identifiant du bénéficiaire que vous accompagnez."
@@ -72,9 +75,11 @@ export function validateMissionForm(form, { requiresBeneficiary, now = new Date(
   if (!form.city.trim()) {
     errors.city = 'La ville est obligatoire.'
   }
-  const reward = String(form.reward).trim()
-  if (!REWARD_PATTERN.test(reward) || parseReward(reward) <= 0) {
-    errors.reward = 'Indiquez un montant positif en euros, avec 2 décimales au plus.'
+  const wage = String(form.hourlyNetWage).trim()
+  if (!WAGE_PATTERN.test(wage) || parseAmount(wage) <= 0) {
+    errors.hourlyNetWage = 'Indiquez un salaire horaire en euros, avec 2 décimales au plus.'
+  } else if (minimumHourlyNetWage !== null && parseAmount(wage) < minimumHourlyNetWage) {
+    errors.hourlyNetWage = `Le salaire horaire net doit être d’au moins ${formatEuros(minimumHourlyNetWage)} (SMIC net et congés payés).`
   }
   return errors
 }
@@ -98,7 +103,7 @@ export function toPublishPayload(form, location, { requiresBeneficiary }) {
       latitude: location.latitude,
       longitude: location.longitude,
     },
-    reward: parseReward(String(form.reward).trim()),
+    hourlyNetWage: parseAmount(String(form.hourlyNetWage).trim()),
     requiredSkills: [...form.requiredSkills],
   }
 }
@@ -109,6 +114,6 @@ export function toDateTimeLocalValue(date) {
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16)
 }
 
-function parseReward(value) {
+function parseAmount(value) {
   return Number(value.replace(',', '.'))
 }

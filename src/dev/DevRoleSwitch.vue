@@ -5,25 +5,25 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { DEV_ACCOUNTS, DEV_ACCOUNTS_MISSING } from './devAccounts'
 
-/** Local development only: switch to the other demo account from the account menu. */
+/** Local development only: switch to another demo account from the account menu. */
 const auth = useAuthStore()
 const router = useRouter()
 const { role } = storeToRefs(auth)
 
-const switching = ref(false)
+const switchingTo = ref(null)
 const errorMessage = ref('')
-const otherAccount = computed(() => DEV_ACCOUNTS.find((account) => account.role !== role.value) ?? DEV_ACCOUNTS[0])
+const otherAccounts = computed(() => DEV_ACCOUNTS.filter((account) => account.role !== role.value))
 
-async function switchAccount() {
-  switching.value = true
+async function switchTo(account) {
+  switchingTo.value = account.role
   errorMessage.value = ''
   try {
-    await auth.login(otherAccount.value.email, otherAccount.value.password)
+    await auth.login(account.email, account.password)
     await router.replace({ name: 'dashboard' })
   } catch (error) {
     errorMessage.value = error.status === 401 ? DEV_ACCOUNTS_MISSING : error.message
   } finally {
-    switching.value = false
+    switchingTo.value = null
   }
 }
 </script>
@@ -31,8 +31,15 @@ async function switchAccount() {
 <template>
   <div class="flex flex-col gap-2">
     <p class="text-sm font-bold text-ink-muted">Mode local</p>
-    <button type="button" class="btn-secondary w-full" :disabled="switching" @click="switchAccount">
-      {{ switching ? 'Changement…' : `Passer en ${otherAccount.label.toLowerCase()}` }}
+    <button
+      v-for="account in otherAccounts"
+      :key="account.role"
+      type="button"
+      class="btn-secondary w-full"
+      :disabled="switchingTo !== null"
+      @click="switchTo(account)"
+    >
+      {{ switchingTo === account.role ? 'Changement…' : `Passer en ${account.label.toLowerCase()}` }}
     </button>
     <p v-if="errorMessage" role="alert" class="text-base text-danger">{{ errorMessage }}</p>
   </div>

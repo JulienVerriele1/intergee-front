@@ -4,6 +4,7 @@ import { fetchAssignment, withdrawApplication } from '@/api/missionApi'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import { applicationStatus, canReview } from '@/missions/missionTracking'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
 import PresentationText from '@/components/profile/PresentationText.vue'
 import MissionHeadline from './MissionHeadline.vue'
@@ -117,6 +118,11 @@ function withdraw() {
         :title="`Présentation de ${assignment.beneficiary.firstName}`"
         open
       />
+      <!-- Declared to the CESU by the employer, as they say (spec 013, RG-9) -->
+      <p v-if="application.completedAt" class="tag self-start" :class="application.declared ? 'bg-success-soft' : 'bg-accent-soft'">
+        <AppIcon :name="application.declared ? 'check' : 'clock'" :class="application.declared ? 'text-success' : 'text-ink'" />
+        {{ application.declared ? 'Déclarée au CESU' : 'En attente de déclaration au CESU' }}
+      </p>
       <button v-if="reviewable" type="button" class="btn-primary self-start" @click="reviewing = true">Laisser un avis</button>
       <p v-else-if="application.reviewSubmitted" class="text-sm font-semibold text-green-800">Avis envoyé</p>
     </template>

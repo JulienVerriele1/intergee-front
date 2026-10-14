@@ -87,16 +87,19 @@ export const FAQ = Object.freeze({
           ],
         },
         {
-          question: 'Et la compensation ?',
+          question: 'Comment suis-je payé ?',
           answer: [
-            'Son montant est indiqué sur chaque mission. Son versement n’est pas encore géré par Geen.',
+            'Pour chaque mission, vous êtes le salarié du bénéficiaire, qui vous déclare au CESU (Chèque emploi service universel) après la mission. Le salaire horaire net est indiqué sur chaque mission : jamais moins que le SMIC net, congés payés compris.',
+            'Avec l’option CESU+, c’est l’URSSAF qui vous verse le salaire. Dans « Mes candidatures », chaque mission passée indique si elle a été déclarée.',
+            'Le bénéficiaire vous demandera votre numéro de sécurité sociale pour vous déclarer : donnez-le-lui directement, Geen ne le demande jamais. Jusqu’à 25 ans, vos salaires d’étudiant sont exonérés d’impôt sur le revenu, dans une certaine limite.',
           ],
         },
         {
           question: 'Comment fonctionnent les avis ?',
           answer: [
             'Une fois la mission confirmée par le bénéficiaire, chacun peut noter l’autre de 1 à 5 étoiles pendant 14 jours. Une note reste cachée jusqu’à ce que l’autre ait noté aussi, ou jusqu’à la fin des 14 jours : personne ne note en réaction.',
-            'Vos avis reçus sont dans le menu en haut à droite.',
+            'Vous pouvez ajouter un commentaire de 500 caractères au plus, publié avec votre prénom. Restez factuel et bienveillant : aucune information de santé, aucun nom.',
+            'Vos avis reçus sont dans le menu en haut à droite. Un commentaire vous semble injurieux ou indiscret ? Choisissez « Signaler ce commentaire » : il est masqué aussitôt, puis vérifié par l’équipe Geen.',
           ],
         },
       ],
@@ -149,7 +152,7 @@ export const FAQ = Object.freeze({
         {
           question: 'Comment publier une mission ?',
           answer: [
-            'Dans « Mes missions », choisissez « Ajouter une mission ». Indiquez la catégorie, les compétences nécessaires, la date et l’heure, la durée (de 15 minutes à 4 heures), l’adresse et la compensation.',
+            'Dans « Mes missions », choisissez « Ajouter une mission ». Indiquez la catégorie, les compétences nécessaires, la date et l’heure, la durée (de 15 minutes à 4 heures), l’adresse et le salaire horaire net.',
           ],
         },
         {
@@ -168,6 +171,30 @@ export const FAQ = Object.freeze({
           question: 'Mon adresse est-elle visible ?',
           answer: [
             'Non. Les étudiants ne voient que le code postal, la ville et la distance. Votre adresse, votre téléphone et votre présentation sont communiqués uniquement à l’étudiant que vous choisissez.',
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Rémunérer l’étudiant',
+      questions: [
+        {
+          question: 'Comment rémunérer l’étudiant ?',
+          answer: [
+            'Vous êtes son employeur, et vous le déclarez au CESU, sur cesu.urssaf.fr : inscription gratuite, une seule fois. Le salaire horaire net est au moins le SMIC net, congés payés compris ; Geen vous montre ce que la mission vous coûtera vraiment.',
+            'Choisissez l’option CESU+ : l’URSSAF verse le salaire à l’étudiant pour vous, et l’avance immédiate du crédit d’impôt vous évite d’avancer la moitié de la somme.',
+          ],
+        },
+        {
+          question: 'Comment déclarer une mission ?',
+          answer: [
+            'Une fois la mission confirmée, la page « Déclaration CESU », en haut de l’écran, affiche une fiche « À déclarer » par étudiant et par mois : recopiez-la sur cesu.urssaf.fr, puis choisissez « C’est déclaré ». L’étudiant voit alors que sa mission est déclarée.',
+          ],
+        },
+        {
+          question: 'Ai-je droit à un crédit d’impôt ?',
+          answer: [
+            'Oui, en principe : 50 % des sommes versées pour des services à la personne à domicile. Les conditions exactes sont sur impots.gouv.fr et cesu.urssaf.fr.',
           ],
         },
       ],
@@ -209,6 +236,7 @@ export const FAQ = Object.freeze({
           question: 'Comment fonctionnent les avis ?',
           answer: [
             'Pendant 14 jours après la confirmation, vous pouvez noter l’étudiant de 1 à 5 étoiles, et il peut vous noter. Une note reste cachée jusqu’à ce que l’autre ait noté aussi, ou jusqu’à la fin des 14 jours.',
+            'Vous pouvez ajouter un commentaire de 500 caractères au plus, publié avec votre prénom. Avant de choisir un candidat, « Lire les avis » montre ce que d’autres en ont dit. Un commentaire reçu vous semble injurieux ou indiscret ? Signalez-le depuis vos avis reçus : il est masqué aussitôt, puis vérifié par l’équipe Geen.',
           ],
         },
         {

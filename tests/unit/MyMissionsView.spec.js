@@ -80,4 +80,10 @@ describe('MyMissionsView', () => {
     expect(profileApi.fetchMyBeneficiaryProfile).not.toHaveBeenCalled()
     expect(wrapper.find('a[href="/missions/publier"]').exists()).toBe(true)
   })
+
+  it('leaves the CESU declarations to their own page', async () => {
+    const { wrapper } = await mountView('BENEFICIARY')
+
+    expect(wrapper.text()).not.toContain('À déclarer au CESU')
+  })
 })

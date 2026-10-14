@@ -15,6 +15,13 @@ export const DEV_ACCOUNTS = Object.freeze([
     email: 'beneficiaire@demo.intergee.fr',
     password: 'demo-intergee-local',
   },
+  {
+    role: 'MODERATOR',
+    label: 'Modérateur',
+    description: 'Max, de l’équipe Geen, qui modère les commentaires signalés',
+    email: 'moderateur@demo.intergee.fr',
+    password: 'demo-intergee-local',
+  },
 ])
 
 export const DEV_ACCOUNTS_MISSING =

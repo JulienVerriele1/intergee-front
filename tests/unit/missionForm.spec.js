@@ -14,7 +14,7 @@ function validForm(overrides = {}) {
     street: '12 rue de Lens',
     postalCode: '59000',
     city: 'Lille',
-    reward: '20,5',
+    hourlyNetWage: '12,5',
     requiredSkills: ['GROCERY_SHOPPING'],
     ...overrides,
   }
@@ -29,7 +29,7 @@ describe('validateMissionForm', () => {
     const errors = validateMissionForm(emptyMissionForm(), { requiresBeneficiary: true, now: NOW })
 
     expect(Object.keys(errors).sort()).toEqual(
-      ['beneficiaryId', 'category', 'city', 'description', 'postalCode', 'reward', 'scheduledAt', 'street', 'title'],
+      ['beneficiaryId', 'category', 'city', 'description', 'hourlyNetWage', 'postalCode', 'scheduledAt', 'street', 'title'],
     )
   })
 
@@ -44,8 +44,17 @@ describe('validateMissionForm', () => {
       .toHaveProperty('durationMinutes')
   })
 
-  it.each(['0', '-5', '12.345', 'abc'])('refuses a reward of %s', (reward) => {
-    expect(validateMissionForm(validForm({ reward }), { requiresBeneficiary: false, now: NOW })).toHaveProperty('reward')
+  it.each(['0', '-5', '12.345', 'abc'])('refuses an hourly wage of %s', (hourlyNetWage) => {
+    expect(validateMissionForm(validForm({ hourlyNetWage }), { requiresBeneficiary: false, now: NOW })).toHaveProperty('hourlyNetWage')
+  })
+
+  it('refuses an hourly wage below the minimum, once known', () => {
+    const options = { requiresBeneficiary: false, minimumHourlyNetWage: 10.45, now: NOW }
+
+    expect(validateMissionForm(validForm({ hourlyNetWage: '10,44' }), options).hourlyNetWage).toBe(
+      'Le salaire horaire net doit être d’au moins 10,45\u00a0€ (SMIC net et congés payés).',
+    )
+    expect(validateMissionForm(validForm({ hourlyNetWage: '10,45' }), options)).toEqual({})
   })
 
   it('requires a valid beneficiary id from a caregiver only', () => {
@@ -68,7 +77,7 @@ describe('toPublishPayload', () => {
       scheduledAt: new Date('2026-10-17T09:00').toISOString(),
       durationMinutes: 90,
       location: { street: '12 rue de Lens', postalCode: '59000', city: 'Lille', latitude: 50.625, longitude: 3.063 },
-      reward: 20.5,
+      hourlyNetWage: 12.5,
       requiredSkills: ['GROCERY_SHOPPING'],
     })
   })

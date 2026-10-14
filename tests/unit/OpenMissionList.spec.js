@@ -16,7 +16,7 @@ const PREVIEW = {
   postalCode: '59000',
   city: 'Lille',
   distanceKm: 3,
-  reward: 20,
+  hourlyNetWage: 12, netWage: 18,
   alreadyApplied: false,
   requiredSkills: ['GROCERY_SHOPPING'],
   matchingSkills: ['GROCERY_SHOPPING'],

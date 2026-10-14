@@ -1,11 +1,26 @@
 <script setup>
+import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { fetchMyBeneficiaryProfile } from '@/api/profileApi'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { ROLES } from '@/constants/roles'
 import MissionPublishForm from '@/components/missions/MissionPublishForm.vue'
 
 const { role } = storeToRefs(useAuthStore())
+
+// Reminded until the beneficiary says they are registered; always for a caregiver (spec 013, RG-5)
+const showCesuReminder = ref(role.value === ROLES.CAREGIVER)
+onMounted(async () => {
+  if (role.value !== ROLES.BENEFICIARY) {
+    return
+  }
+  try {
+    showCesuReminder.value = !(await fetchMyBeneficiaryProfile()).cesuRegistered
+  } catch {
+    showCesuReminder.value = true
+  }
+})
 </script>
 
 <template>
@@ -22,6 +37,6 @@ const { role } = storeToRefs(useAuthStore())
       </RouterLink>
     </div>
 
-    <MissionPublishForm :requires-beneficiary="role === ROLES.CAREGIVER" />
+    <MissionPublishForm :requires-beneficiary="role === ROLES.CAREGIVER" :show-cesu-reminder="showCesuReminder" />
   </div>
 </template>

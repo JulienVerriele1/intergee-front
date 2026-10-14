@@ -1,13 +1,16 @@
 <script setup>
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { publishMission } from '@/api/missionApi'
+import { estimateCost } from '@/api/wageApi'
 import { MISSION_CATEGORIES } from '@/constants/missionCategories'
 import { skillFamiliesForCategory } from '@/constants/profileOptions'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import AddressAutocomplete from '@/components/ui/AddressAutocomplete.vue'
 import FormField from '@/components/ui/FormField.vue'
 import DateTimePicker from '@/components/ui/DateTimePicker.vue'
-import { formatDateTime, formatDuration } from '@/utils/formatters'
+import CesuReminder from './CesuReminder.vue'
+import CostEstimate from './CostEstimate.vue'
+import { formatDateTime, formatDuration, formatEuros } from '@/utils/formatters'
 import {
   DESCRIPTION_MAX_LENGTH,
   DURATION_OPTIONS,
@@ -21,6 +24,8 @@ import {
 const props = defineProps({
   /** A caregiver publishes on behalf of a beneficiary they manage */
   requiresBeneficiary: { type: Boolean, default: false },
+  /** Until the employer says they are registered to the CESU (spec 013, RG-5) */
+  showCesuReminder: { type: Boolean, default: false },
 })
 
 const form = reactive(emptyMissionForm())
@@ -31,6 +36,20 @@ const submitting = ref(false)
 const submitError = ref('')
 const publishedMission = ref(null)
 const formElement = ref(null)
+// Net SMIC with paid leave (spec 013, RG-2): the wage starts there, and is never published below it
+const minimumHourlyNetWage = ref(null)
+
+onMounted(async () => {
+  try {
+    const { minimumHourlyNetWage: minimum } = await estimateCost({ hourlyNetWage: 20, durationMinutes: 60 })
+    minimumHourlyNetWage.value = minimum
+    if (!form.hourlyNetWage) {
+      form.hourlyNetWage = Number(minimum).toFixed(2).replace('.', ',')
+    }
+  } catch {
+    // The server checks the minimum anyway
+  }
+})
 
 const minScheduledAt = computed(() => toDateTimeLocalValue(new Date()))
 // Skills a mission of the chosen category may require (spec 011, RG-2)
@@ -62,7 +81,10 @@ async function onAddressSelected(address) {
 async function submit() {
   submitError.value = ''
   publishedMission.value = null
-  errors.value = validateMissionForm(form, { requiresBeneficiary: props.requiresBeneficiary })
+  errors.value = validateMissionForm(form, {
+    requiresBeneficiary: props.requiresBeneficiary,
+    minimumHourlyNetWage: minimumHourlyNetWage.value,
+  })
   if (!location.value) {
     locationError.value ||= 'Choisissez l’adresse dans la liste proposée sous « Numéro et rue ».'
   }
@@ -77,6 +99,9 @@ async function submit() {
       toPublishPayload(form, location.value, { requiresBeneficiary: props.requiresBeneficiary }),
     )
     Object.assign(form, emptyMissionForm())
+    if (minimumHourlyNetWage.value) {
+      form.hourlyNetWage = Number(minimumHourlyNetWage.value).toFixed(2).replace('.', ',')
+    }
     await nextTick()
     location.value = null
   } catch (error) {
@@ -84,7 +109,9 @@ async function submit() {
     submitError.value =
       error.code === 'PROFILE_INCOMPLETE'
         ? 'Avant de publier une mission, ajoutez votre présentation dans « Mon profil ».'
-        : error.message
+        : error.code === 'WAGE_BELOW_MINIMUM'
+          ? 'Le salaire horaire net est inférieur au minimum légal (SMIC net et congés payés) : augmentez-le.'
+          : error.message
   } finally {
     submitting.value = false
   }
@@ -190,18 +217,30 @@ async function focusFirstInvalidField() {
         </p>
       </fieldset>
 
-      <FormField id="reward" v-slot="field" label="Compensation (€)" :error="errors.reward" required>
-        <input
-          :id="field.id"
-          v-model="form.reward"
-          class="form-input"
-          inputmode="decimal"
-          placeholder="Ex. : 20"
-          :aria-describedby="field.describedBy"
-          :aria-invalid="field.invalid"
+      <div class="flex flex-col gap-3 sm:col-span-2">
+        <FormField
+          id="hourly-net-wage"
+          v-slot="field"
+          label="Salaire horaire net (€ de l'heure)"
+          :help="minimumHourlyNetWage
+            ? `L'étudiant est votre salarié : au moins ${formatEuros(minimumHourlyNetWage)} de l'heure (SMIC net et congés payés).`
+            : 'L\'étudiant est votre salarié : au moins le SMIC net, congés payés compris.'"
+          :error="errors.hourlyNetWage"
           required
-        />
-      </FormField>
+        >
+          <input
+            :id="field.id"
+            v-model="form.hourlyNetWage"
+            class="form-input sm:w-48"
+            inputmode="decimal"
+            :aria-describedby="field.describedBy"
+            :aria-invalid="field.invalid"
+            required
+          />
+        </FormField>
+        <CostEstimate :hourly-net-wage="String(form.hourlyNetWage)" :duration-minutes="Number(form.durationMinutes)" />
+        <CesuReminder v-if="showCesuReminder" />
+      </div>
 
       <FormField
         id="description"

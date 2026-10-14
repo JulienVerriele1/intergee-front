@@ -13,7 +13,7 @@ const routes = [
       roles: ALL_ROLES,
       title: 'Tableau de bord',
       // Those who publish missions land on their missions; publishing has its own page
-      redirectByRole: { [ROLES.BENEFICIARY]: 'my-missions', [ROLES.CAREGIVER]: 'my-missions' },
+      redirectByRole: { [ROLES.BENEFICIARY]: 'my-missions', [ROLES.CAREGIVER]: 'my-missions', [ROLES.MODERATOR]: 'moderation' },
     },
   },
   {
@@ -25,7 +25,7 @@ const routes = [
       roles: ALL_ROLES,
       title: 'Mes missions',
       // The applications of a student are a tab of their dashboard: an old link leads there
-      redirectByRole: { [ROLES.STUDENT]: 'dashboard' },
+      redirectByRole: { [ROLES.STUDENT]: 'dashboard', [ROLES.MODERATOR]: 'moderation' },
     },
   },
   {
@@ -65,6 +65,18 @@ const routes = [
     component: () => import('@/views/RegisterView.vue'),
     props: { role: ROLES.BENEFICIARY },
     meta: { guestOnly: true, title: 'Inscription bénéficiaire' },
+  },
+  {
+    path: '/moderation',
+    name: 'moderation',
+    component: () => import('@/views/ModerationView.vue'),
+    meta: { requiresAuth: true, roles: [ROLES.MODERATOR], title: 'Modération' },
+  },
+  {
+    path: '/declarations',
+    name: 'declarations',
+    component: () => import('@/views/DeclarationsView.vue'),
+    meta: { requiresAuth: true, roles: PUBLISHER_ROLES, title: 'Déclaration CESU' },
   },
   {
     path: '/faq',

@@ -16,7 +16,7 @@ function application(title, scheduledAt, applicationStatus = 'ACCEPTED') {
       durationMinutes: 90,
       postalCode: '59000',
       city: 'Lille',
-      reward: 20,
+      hourlyNetWage: 12, netWage: 18,
       status: applicationStatus === 'ACCEPTED' ? 'ASSIGNED' : 'APPLIED',
       requiredSkills: ['GROCERY_SHOPPING', 'OUTING_ESCORT'],
     },
@@ -153,6 +153,24 @@ describe('StudentApplicationsTable', () => {
     const presentation = wrapper.get('#application-detail details')
     expect(presentation.get('summary').text()).toBe('Présentation de Jeanne')
     expect(presentation.text()).toContain('Institutrice à la retraite.')
+    wrapper.unmount()
+  })
+
+  it('tells the student whether a completed mission is declared to the CESU', async () => {
+    missionApi.fetchMyApplications.mockResolvedValue(page([
+      { ...application('Courses', '2026-11-05T08:00:00Z'), completedAt: '2026-11-05T10:00:00Z', declared: false },
+    ]))
+    missionApi.fetchAssignment.mockResolvedValue({
+      location: { street: '1 place du Général de Gaulle', postalCode: '59000', city: 'Lille', latitude: 50.6, longitude: 3.06 },
+      beneficiary: { firstName: 'Jeanne', lastName: 'Démo', phone: '+33320000000', presentation: null },
+    })
+    const wrapper = mount(StudentApplicationsTable, { attachTo: document.body })
+    await flushPromises()
+
+    await wrapper.get('tbody tr').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('#application-detail').text()).toContain('En attente de déclaration au CESU')
     wrapper.unmount()
   })
 })

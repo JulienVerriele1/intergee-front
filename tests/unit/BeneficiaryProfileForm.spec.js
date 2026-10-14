@@ -58,6 +58,7 @@ describe('BeneficiaryProfileForm', () => {
     // When
     await wrapper.get('#phone').setValue('06 12 34 56 78')
     await wrapper.get('#presentation').setValue(PRESENTATION)
+    await wrapper.findAll('input[type="checkbox"]').find((box) => box.element.closest('label').textContent.includes('inscrit au CESU')).setValue(true)
     await wrapper.get('form').trigger('submit')
     await flushPromises()
 
@@ -66,6 +67,7 @@ describe('BeneficiaryProfileForm', () => {
       phone: '06 12 34 56 78',
       address: { street: '12 rue de Lens', postalCode: '59000', city: 'Lille' },
       presentation: PRESENTATION,
+      cesuRegistered: true,
     })
     expect(wrapper.text()).toContain('Votre profil est enregistré.')
     expect(wrapper.text()).not.toContain('Ajoutez votre présentation')

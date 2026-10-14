@@ -247,6 +247,17 @@ onMounted(load)
           </fieldset>
         </section>
 
+        <!-- The student is the employee of the beneficiary (spec 013) -->
+        <section aria-labelledby="cesu-title" class="card flex flex-col gap-3">
+          <h2 id="cesu-title" class="text-xl font-bold">Être payé en CESU</h2>
+          <ul class="list-disc space-y-1 pl-6 text-lg">
+            <li>Pour chaque mission, vous êtes le salarié du bénéficiaire, qui vous déclare au CESU : vous n'avez rien à déclarer vous-même.</li>
+            <li>Vos heures comptent pour vos droits, et l'URSSAF vous envoie une attestation d'emploi.</li>
+            <li>Jusqu'à 25 ans, vos salaires d'étudiant sont exonérés d'impôt sur le revenu, dans une certaine limite.</li>
+            <li>Le bénéficiaire vous demandera votre numéro de sécurité sociale : donnez-le-lui directement, Geen ne le demande jamais.</li>
+          </ul>
+        </section>
+
         <AlertMessage v-if="saveMessage" :variant="saveMessage.variant">{{ saveMessage.text }}</AlertMessage>
         <button type="submit" class="btn-primary self-start" :disabled="saving">
           {{ saving ? 'Enregistrement…' : 'Enregistrer mon profil' }}

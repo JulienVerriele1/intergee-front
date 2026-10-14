@@ -88,13 +88,14 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOnOutside
       </section>
 
       <nav v-if="role === ROLES.STUDENT || role === ROLES.BENEFICIARY" aria-label="Compte" class="p-5">
-        <RouterLink :to="{ name: 'profile' }" class="btn-secondary w-full">
+        <RouterLink v-if="role === ROLES.STUDENT || role === ROLES.BENEFICIARY" :to="{ name: 'profile' }" class="btn-secondary w-full">
           <AppIcon name="user" :size="20" />
           Mon profil
         </RouterLink>
       </nav>
 
-      <div class="p-5">
+      <!-- A moderator is never reviewed (spec 014) -->
+      <div v-if="role !== ROLES.MODERATOR" class="p-5">
         <ReceivedReviews :show-names="role === ROLES.CAREGIVER" @loaded="onReputationsLoaded" />
       </div>
 

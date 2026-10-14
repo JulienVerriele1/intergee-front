@@ -1,10 +1,9 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { fetchMyReputations, fetchUserReviews } from '@/api/reviewApi'
-import { categoryLabel } from '@/constants/missionCategories'
 import { missionErrorMessage } from '@/missions/missionErrors'
-import { formatDateTime } from '@/utils/formatters'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
+import ReviewList from './ReviewList.vue'
 import StarRating from './StarRating.vue'
 
 /** Reputation of the user, or of every beneficiary a caregiver manages, in the account menu (spec 007, Q7). */
@@ -21,6 +20,15 @@ async function load() {
   try {
     reputations.value = await fetchMyReputations()
     emit('loaded', reputations.value)
+  } catch (error) {
+    errorMessage.value = missionErrorMessage(error)
+  }
+}
+
+// A comment reported: reloaded so that it shows hidden
+async function reloadDetails(userId) {
+  try {
+    details.value = { ...details.value, [userId]: await fetchUserReviews(userId) }
   } catch (error) {
     errorMessage.value = missionErrorMessage(error)
   }
@@ -54,19 +62,18 @@ onMounted(load)
           <button
             v-if="person.reviewCount > 0"
             type="button"
-            class="font-semibold text-blue-800 underline"
+            class="link text-base"
             :aria-expanded="Boolean(details[person.userId])"
             @click="toggleDetails(person.userId)"
           >
             {{ details[person.userId] ? 'Masquer les avis' : 'Voir les avis' }}
           </button>
         </div>
-        <ul v-if="details[person.userId]" role="list" class="flex flex-col gap-1 text-sm">
-          <li v-for="(review, index) in details[person.userId].items" :key="index" class="flex flex-wrap gap-2">
-            <StarRating :average-rating="review.rating" :review-count="1" :show-count="false" />
-            <span>{{ categoryLabel(review.missionCategory) }} · {{ formatDateTime(review.createdAt) }}</span>
-          </li>
-        </ul>
+        <ReviewList
+          v-if="details[person.userId]"
+          :reviews="details[person.userId].items"
+          @reported="reloadDetails(person.userId)"
+        />
       </li>
     </ul>
   </section>

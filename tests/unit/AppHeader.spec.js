@@ -20,6 +20,7 @@ async function mountHeader(role) {
       { path: '/missions', name: 'my-missions', component: { template: '<p>missions</p>' } },
       { path: '/profil', name: 'profile', component: { template: '<p>profil</p>' } },
       { path: '/faq', name: 'faq', component: { template: '<p>faq</p>' } },
+      { path: '/declarations', name: 'declarations', component: { template: '<p>declarations</p>' } },
     ],
   })
   await router.push('/')
@@ -50,5 +51,19 @@ describe('AppHeader', () => {
 
     expect(resolveNavigation(missions, { isAuthenticated: true, role: 'STUDENT' })).toEqual({ name: 'dashboard' })
     expect(resolveNavigation(missions, { isAuthenticated: true, role: 'BENEFICIARY' })).toBe(true)
+  })
+
+  it('shows the CESU declarations next to the theme toggle, to employers only', async () => {
+    for (const [role, expected] of [['BENEFICIARY', true], ['CAREGIVER', true], ['STUDENT', false]]) {
+      const wrapper = await mountHeader(role)
+      const link = wrapper.find('a[href="/declarations"]')
+      expect(link.exists()).toBe(expected)
+      if (expected) {
+        expect(link.text()).toBe('Déclaration CESU')
+        // Right before the theme toggle, outside the burger menu
+        expect(link.element.nextElementSibling.getAttribute('aria-label')).toMatch(/thème|mode/i)
+        expect(wrapper.find('[aria-label="Compte"] a[href="/declarations"]').exists()).toBe(false)
+      }
+    }
   })
 })

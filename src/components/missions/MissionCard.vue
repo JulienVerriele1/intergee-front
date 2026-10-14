@@ -1,6 +1,6 @@
 <script setup>
 import { categoryLabel } from '@/constants/missionCategories'
-import { formatDateTime, formatDuration, formatEuros } from '@/utils/formatters'
+import { formatDateTime, formatDuration, formatWage } from '@/utils/formatters'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { skillLabel } from '@/constants/profileOptions'
 
@@ -61,8 +61,8 @@ defineProps({
         </dd>
       </div>
       <div>
-        <dt class="font-bold text-ink-muted">Compensation</dt>
-        <dd>{{ formatEuros(mission.reward) }}</dd>
+        <dt class="font-bold text-ink-muted">Salaire net</dt>
+        <dd>{{ formatWage(mission) }}</dd>
       </div>
     </dl>
     <!-- Actions on the mission, provided by the parent (apply / withdraw for a student) -->

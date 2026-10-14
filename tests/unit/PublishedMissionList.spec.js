@@ -21,7 +21,7 @@ function published(overrides = {}) {
     durationMinutes: 90,
     postalCode: '59000',
     city: 'Lille',
-    reward: 20,
+    hourlyNetWage: 12, netWage: 18,
     status: 'APPLIED',
     applicationCount: 2,
     assignedStudentFirstName: null,
@@ -259,7 +259,7 @@ describe('PublishedMissionList', () => {
     await flushPromises()
 
     // Then
-    expect(reviewApi.submitReview).toHaveBeenCalledWith(published().id, 4)
+    expect(reviewApi.submitReview).toHaveBeenCalledWith(published().id, 4, '')
     expect(wrapper.text()).toContain('Merci pour votre avis')
   })
 

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import { assignMission, completeMission, fetchApplications, fetchAssignment } from '@/api/missionApi'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import { canReview, isOver, publishedMissionStatus } from '@/missions/missionTracking'
@@ -7,6 +7,7 @@ import { formatDateTime } from '@/utils/formatters'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
+import CandidateReviews from '@/components/reviews/CandidateReviews.vue'
 import StarRating from '@/components/reviews/StarRating.vue'
 import StudentPhoto from '@/components/ui/StudentPhoto.vue'
 import { skillLabel, studyLevelLabel } from '@/constants/profileOptions'
@@ -14,6 +15,7 @@ import PresentationText from '@/components/profile/PresentationText.vue'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import CesuReminder from '@/components/missions/CesuReminder.vue'
 
 const props = defineProps({
   mission: { type: Object, required: true },
@@ -21,6 +23,8 @@ const props = defineProps({
   showBeneficiary: { type: Boolean, default: false },
 })
 const emit = defineEmits(['changed'])
+// Reminded until the beneficiary says they are registered to the CESU (spec 013, RG-5); provided by « Mes missions »
+const showCesuReminder = inject('showCesuReminder', ref(true))
 
 const titleId = computed(() => `published-${props.mission.id}-title`)
 const status = computed(() => publishedMissionStatus(props.mission))
@@ -123,6 +127,13 @@ async function confirm() {
                 · candidature du {{ formatDateTime(candidate.appliedAt) }}
               </p>
               <StarRating :average-rating="candidate.averageRating" :review-count="candidate.reviewCount" />
+              <CandidateReviews
+                v-if="candidate.reviewCount > 0"
+                :student-id="candidate.applicantId"
+                :first-name="candidate.firstName"
+                :review-count="candidate.reviewCount"
+                class="mt-1"
+              />
               <p v-if="candidate.matchingSkills?.length" class="mt-2 font-bold text-success">
                 {{ candidate.matchingSkills.length }} compétence{{ candidate.matchingSkills.length > 1 ? 's' : '' }} demandée{{ candidate.matchingSkills.length > 1 ? 's' : '' }} pour cette mission
               </p>
@@ -195,6 +206,11 @@ async function confirm() {
     >
       {{ pendingConfirmation.candidate.firstName }} réalisera la mission « {{ mission.title }} » et recevra votre adresse.
       Les autres candidatures seront refusées. Ce choix est définitif.
+      <span class="mt-3 block">
+        Après la mission, vous déclarerez {{ pendingConfirmation.candidate.firstName }} au CESU. Son numéro de sécurité
+        sociale vous sera donné directement : Geen ne le demande jamais.
+      </span>
+      <CesuReminder v-if="showCesuReminder" :student-first-name="pendingConfirmation.candidate.firstName" class="mt-3" />
     </ConfirmDialog>
     <ConfirmDialog
       v-if="pendingConfirmation?.type === 'complete'"

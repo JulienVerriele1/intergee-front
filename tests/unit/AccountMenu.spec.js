@@ -19,6 +19,7 @@ async function mountMenu(role) {
       { path: '/', name: 'dashboard', component: { template: '<p>dashboard</p>' } },
       { path: '/profil', name: 'profile', component: { template: '<p>profil</p>' } },
       { path: '/faq', name: 'faq', component: { template: '<p>faq</p>' } },
+      { path: '/declarations', name: 'declarations', component: { template: '<p>declarations</p>' } },
     ],
   })
   await router.push('/')
@@ -80,6 +81,16 @@ describe('AccountMenu', () => {
     await wrapper.findAll('button').find((button) => button.text() === 'Se déconnecter').trigger('click')
 
     expect(useAuthStore().isAuthenticated).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('shows no reviews to a moderator, who is never reviewed', async () => {
+    const { wrapper } = await mountMenu('MODERATOR')
+    await wrapper.get('button[aria-label="Menu du compte"]').trigger('click')
+
+    expect(wrapper.text()).toContain('Modérateur')
+    expect(reviewApi.fetchMyReputations).not.toHaveBeenCalled()
+    expect(wrapper.find('a[href="/profil"]').exists()).toBe(false)
     wrapper.unmount()
   })
 })

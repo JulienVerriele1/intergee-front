@@ -6,6 +6,7 @@ import { skillFamiliesForCategory } from '@/constants/profileOptions'
 
 vi.mock('@/api/missionApi')
 vi.mock('@/api/geocodingApi')
+vi.mock('@/api/wageApi')
 
 describe('skills of a mission', () => {
   it('offers the skills of the category only', () => {
@@ -70,7 +71,7 @@ describe('skills of a mission', () => {
       postalCode: '59000',
       city: 'Lille',
       distanceKm: 2,
-      reward: 15,
+      hourlyNetWage: 12, netWage: 18,
       alreadyApplied: false,
       requiredSkills: ['SMARTPHONE_TABLET', 'VIDEO_CALLS'],
       matchingSkills: ['VIDEO_CALLS'],

@@ -1,7 +1,7 @@
 <script setup>
 import { categoryLabel } from '@/constants/missionCategories'
 import { skillLabel } from '@/constants/profileOptions'
-import { formatDateTime, formatDuration, formatEuros } from '@/utils/formatters'
+import { formatDateTime, formatDuration, formatWage } from '@/utils/formatters'
 
 /** Title, date and place shared by the tracking cards: never the street (spec 009, RG-3). */
 defineProps({
@@ -30,8 +30,8 @@ defineProps({
         <dd>{{ categoryLabel(mission.category) }}</dd>
       </div>
       <div>
-        <dt class="font-bold text-ink-muted">Compensation</dt>
-        <dd>{{ formatEuros(mission.reward) }}</dd>
+        <dt class="font-bold text-ink-muted">Salaire net</dt>
+        <dd>{{ formatWage(mission) }}</dd>
       </div>
     </dl>
     <!-- Given with the applications of a student only (spec 009, RG-3) -->

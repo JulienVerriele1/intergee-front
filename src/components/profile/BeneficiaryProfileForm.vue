@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { fetchMyBeneficiaryProfile, updateMyBeneficiaryProfile } from '@/api/profileApi'
+import { CESU_URL } from '@/api/wageApi'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import { presentationError } from '@/profile/presentation'
 import { isFrenchPhone, nationalPhone } from '@/registration/registrationForm'
@@ -28,6 +29,7 @@ function toForm(source) {
     postalCode: source.address.postalCode,
     city: source.address.city,
     presentation: source.presentation ?? '',
+    cesuRegistered: Boolean(source.cesuRegistered),
   }
 }
 
@@ -72,6 +74,7 @@ async function save() {
       phone: form.value.phone,
       address: { street: form.value.street, postalCode: form.value.postalCode, city: form.value.city },
       presentation: form.value.presentation.trim(),
+      cesuRegistered: form.value.cesuRegistered,
     })
     form.value = toForm(profile.value)
     saveMessage.value = { variant: 'success', text: 'Votre profil est enregistré.' }
@@ -137,6 +140,25 @@ onMounted(load)
             hint="Présentez-vous à l'étudiant qui viendra : qui vous êtes, ce que vous aimez, ce qui compte pour vous."
             :error="errors.presentation"
           />
+        </section>
+
+        <!-- The student is the employee of the beneficiary, declared through the CESU (spec 013, RG-5 and RG-11) -->
+        <section aria-labelledby="cesu-title" class="card flex flex-col gap-4">
+          <h2 id="cesu-title" class="text-xl font-bold">Rémunérer l'étudiant avec le CESU</h2>
+          <p class="text-ink-muted">Vous êtes l'employeur de l'étudiant que vous choisissez. C'est simple :</p>
+          <ol class="list-decimal space-y-1 pl-6 text-lg">
+            <li>
+              Inscrivez-vous une fois sur
+              <a :href="CESU_URL" target="_blank" rel="noopener noreferrer" class="link">
+                cesu.urssaf.fr<span class="sr-only"> (nouvel onglet)</span></a>.
+            </li>
+            <li>Choisissez l'option CESU+ : l'URSSAF verse le salaire à l'étudiant pour vous, et vous ne payez tout de suite que la moitié environ.</li>
+            <li>Après chaque mission, déclarez l'étudiant avec la fiche que Geen prépare dans « Déclaration CESU », en haut de l'écran.</li>
+          </ol>
+          <label class="flex min-h-target items-center gap-3 text-lg">
+            <input v-model="form.cesuRegistered" type="checkbox" class="size-6 shrink-0 accent-primary" />
+            Je suis inscrit au CESU
+          </label>
         </section>
 
         <section aria-labelledby="address-title" class="card flex flex-col gap-4">

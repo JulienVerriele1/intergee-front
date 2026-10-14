@@ -126,6 +126,9 @@ L'interface applique le design system **Geen** (lisible, facile à toucher, chal
   (`utils/pagination.js`). Sur téléphone : deux flèches rondes et « Page 2 sur 5 ».
 - Filtres : `FilterSelect`, liste native en pilule avec son libellé sur la même ligne, bordure `primary` quand un
   filtre s'applique.
+- Illustrations : SVG décoratifs (`aria-hidden`) aux couleurs des jetons, avec les formes du design system et le
+  cœur de la marque. `DeclarationIllustration` est animée une fois au chargement (la fiche se remplit, le tampon se
+  coche, les deux moitiés du cœur se rejoignent), comme `BrandLogo` ; aucune animation si `prefers-reduced-motion`.
 - Dates : `DateTimePicker` (calendrier mensuel à cases de 56px, navigation au clavier, puis créneaux d'une
   demi-heure de 8 h à 20 h) remplace le `datetime-local` natif, illisible et non stylable. Même valeur
   `AAAA-MM-JJTHH:mm`, donc même validation.
