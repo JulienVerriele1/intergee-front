@@ -7,6 +7,8 @@ import GenerationsIllustration from './GenerationsIllustration.vue'
 defineProps({
   /** A caregiver publishes for a person they accompany */
   isCaregiver: { type: Boolean, default: false },
+  /** False while a beneficiary has no presentation: they publish once it is given (spec 012, RG-3) */
+  profileComplete: { type: Boolean, default: true },
 })
 </script>
 
@@ -23,10 +25,21 @@ defineProps({
         Courses, compagnie, aide numérique, jardinage : publiez une mission, un étudiant près de chez
         {{ isCaregiver ? 'elle' : 'vous' }} pourra proposer son aide.
       </p>
-      <RouterLink :to="{ name: 'publish-mission' }" class="btn-primary self-center sm:self-start">
-        <AppIcon name="plus" :size="22" />
-        Ajouter une mission
-      </RouterLink>
+      <template v-if="profileComplete">
+        <RouterLink :to="{ name: 'publish-mission' }" class="btn-primary self-center sm:self-start">
+          <AppIcon name="plus" :size="22" />
+          Ajouter une mission
+        </RouterLink>
+      </template>
+      <template v-else>
+        <p class="text-lg font-bold text-ink">
+          Avant votre première mission, présentez-vous : l'étudiant que vous choisirez lira votre présentation.
+        </p>
+        <RouterLink :to="{ name: 'profile' }" class="btn-primary self-center sm:self-start">
+          <AppIcon name="user" :size="22" />
+          Compléter mon profil
+        </RouterLink>
+      </template>
     </div>
   </section>
 </template>

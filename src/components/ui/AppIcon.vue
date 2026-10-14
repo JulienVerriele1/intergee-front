@@ -1,6 +1,6 @@
 <script setup>
 /**
- * Line icons of the Intergee design system: 24px grid, 2px rounded stroke, coloured by currentColor.
+ * Line icons of the Geen design system: 24px grid, 2px rounded stroke, coloured by currentColor.
  * Decorative only (aria-hidden): an icon always comes with a text label.
  */
 defineProps({

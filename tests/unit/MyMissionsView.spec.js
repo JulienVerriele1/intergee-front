@@ -5,9 +5,11 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import MyMissionsView from '@/views/MyMissionsView.vue'
 import { useAuthStore } from '@/stores/auth'
 import * as missionApi from '@/api/missionApi'
+import * as profileApi from '@/api/profileApi'
 import { validToken } from './tokens'
 
 vi.mock('@/api/missionApi')
+vi.mock('@/api/profileApi')
 
 const EMPTY_PAGE = { items: [], page: 0, size: 20, totalItems: 0, totalPages: 0 }
 
@@ -18,6 +20,7 @@ async function mountView(role) {
     routes: [
       { path: '/missions', name: 'my-missions', component: MyMissionsView },
       { path: '/missions/publier', name: 'publish-mission', component: { template: '<p>publier</p>' } },
+      { path: '/profil', name: 'profile', component: { template: '<p>profil</p>' } },
     ],
   })
   await router.push('/missions')
@@ -31,6 +34,7 @@ describe('MyMissionsView', () => {
     setActivePinia(createPinia())
     vi.resetAllMocks()
     missionApi.fetchMyMissions.mockResolvedValue(EMPTY_PAGE)
+    profileApi.fetchMyBeneficiaryProfile.mockResolvedValue({ complete: true })
   })
 
   it('lets a beneficiary add a mission', async () => {
@@ -57,5 +61,23 @@ describe('MyMissionsView', () => {
     expect(panel.get('h2').text()).toBe('Besoin d’un coup de main ?')
     expect(panel.get('svg').attributes('aria-hidden')).toBe('true')
     expect(panel.find('a[href="/missions/publier"]').exists()).toBe(true)
+  })
+
+  it('leads a beneficiary without presentation to their profile before publishing', async () => {
+    profileApi.fetchMyBeneficiaryProfile.mockResolvedValue({ complete: false })
+
+    const { wrapper } = await mountView('BENEFICIARY')
+
+    const panel = wrapper.get('section[aria-labelledby="publish-mission-title"]')
+    expect(panel.find('a[href="/missions/publier"]').exists()).toBe(false)
+    expect(panel.get('a[href="/profil"]').text()).toBe('Compléter mon profil')
+    expect(panel.text()).toContain('l\'étudiant que vous choisirez lira votre présentation')
+  })
+
+  it('reads no profile for a caregiver, who publishes without presentation', async () => {
+    const { wrapper } = await mountView('CAREGIVER')
+
+    expect(profileApi.fetchMyBeneficiaryProfile).not.toHaveBeenCalled()
+    expect(wrapper.find('a[href="/missions/publier"]').exists()).toBe(true)
   })
 })

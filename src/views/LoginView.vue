@@ -43,7 +43,7 @@ async function submit() {
     <component :is="LocalModePanel" v-if="LocalModePanel" />
     <div class="card">
       <h1 class="mb-1 text-3xl font-bold">Connexion</h1>
-      <p class="mb-6 text-ink-muted">Accédez à votre espace Intergee.</p>
+      <p class="mb-6 text-ink-muted">Accédez à votre espace Geen.</p>
 
       <AlertMessage v-if="errorMessage" variant="error" class="mb-6">{{ errorMessage }}</AlertMessage>
 

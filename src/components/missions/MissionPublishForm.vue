@@ -80,7 +80,11 @@ async function submit() {
     await nextTick()
     location.value = null
   } catch (error) {
-    submitError.value = error.message
+    // A beneficiary publishes once their presentation is given (spec 012, RG-3)
+    submitError.value =
+      error.code === 'PROFILE_INCOMPLETE'
+        ? 'Avant de publier une mission, ajoutez votre présentation dans « Mon profil ».'
+        : error.message
   } finally {
     submitting.value = false
   }

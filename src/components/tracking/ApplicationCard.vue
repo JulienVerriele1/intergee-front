@@ -5,6 +5,7 @@ import { missionErrorMessage } from '@/missions/missionErrors'
 import { applicationStatus, canReview } from '@/missions/missionTracking'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
+import PresentationText from '@/components/profile/PresentationText.vue'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
 
@@ -109,6 +110,13 @@ function withdraw() {
           </dd>
         </div>
       </dl>
+      <!-- Shown to the assigned student only (spec 012, RG-7) -->
+      <PresentationText
+        v-if="assignment?.beneficiary.presentation"
+        :text="assignment.beneficiary.presentation"
+        :title="`Présentation de ${assignment.beneficiary.firstName}`"
+        open
+      />
       <button v-if="reviewable" type="button" class="btn-primary self-start" @click="reviewing = true">Laisser un avis</button>
       <p v-else-if="application.reviewSubmitted" class="text-sm font-semibold text-green-800">Avis envoyé</p>
     </template>

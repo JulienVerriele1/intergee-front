@@ -52,12 +52,23 @@ describe('AccountMenu', () => {
     wrapper.unmount()
   })
 
-  it('has no profile link for a beneficiary', async () => {
+  it('offers their profile to a beneficiary, not to a caregiver', async () => {
+    const { wrapper } = await mountMenu('BENEFICIARY')
+    await wrapper.get('button[aria-label="Menu du compte"]').trigger('click')
+    expect(wrapper.find('a[href="/profil"]').exists()).toBe(true)
+    wrapper.unmount()
+
+    const { wrapper: caregiverMenu } = await mountMenu('CAREGIVER')
+    await caregiverMenu.get('button[aria-label="Menu du compte"]').trigger('click')
+    expect(caregiverMenu.find('a[href="/profil"]').exists()).toBe(false)
+    caregiverMenu.unmount()
+  })
+
+  it('offers to log out', async () => {
     const { wrapper } = await mountMenu('BENEFICIARY')
 
     await wrapper.get('button[aria-label="Menu du compte"]').trigger('click')
 
-    expect(wrapper.find('a[href="/profil"]').exists()).toBe(false)
     expect(wrapper.text()).toContain('Se déconnecter')
     wrapper.unmount()
   })

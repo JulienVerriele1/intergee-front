@@ -32,7 +32,7 @@ const routes = [
     path: '/profil',
     name: 'profile',
     component: () => import('@/views/ProfileView.vue'),
-    meta: { requiresAuth: true, roles: [ROLES.STUDENT], title: 'Mon profil' },
+    meta: { requiresAuth: true, roles: [ROLES.STUDENT, ROLES.BENEFICIARY], title: 'Mon profil' },
   },
   {
     path: '/missions/publier',
@@ -95,5 +95,5 @@ export const router = createRouter({
 router.beforeEach((to) => resolveNavigation(to, useAuthStore()))
 
 router.afterEach((to) => {
-  document.title = to.meta.title ? `${to.meta.title} · Intergee` : 'Intergee'
+  document.title = to.meta.title ? `${to.meta.title} · Geen` : 'Geen'
 })

@@ -29,7 +29,7 @@ watch(audience, (value) => router.replace({ query: { ...route.query, pour: value
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
     <div>
       <h1 class="text-3xl font-bold">Questions fréquentes</h1>
-      <p class="mt-1 text-lg text-ink-muted">Tout ce qu’il faut savoir pour s’entraider sur Intergee.</p>
+      <p class="mt-1 text-lg text-ink-muted">Tout ce qu’il faut savoir pour s’entraider sur Geen.</p>
     </div>
 
     <div role="group" aria-label="Je suis" class="inline-flex flex-wrap gap-1 self-start rounded-full border-2 border-border bg-surface-raised p-1">

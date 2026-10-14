@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import ProfileView from '@/views/ProfileView.vue'
+import StudentProfileForm from '@/components/profile/StudentProfileForm.vue'
 import * as profileApi from '@/api/profileApi'
 import { ApiError } from '@/api/apiError'
 
 vi.mock('@/api/profileApi')
+
+const PRESENTATION = 'Étudiante en lettres, j’aime discuter, lire à voix haute et jouer aux cartes. '.repeat(4).trim()
 
 function profile(overrides = {}) {
   return {
@@ -34,10 +36,11 @@ const COMPLETE = profile({
   skills: ['CONVERSATION', 'WALK'],
   hasPhoto: true,
   complete: true,
+  presentation: PRESENTATION,
 })
 
 async function mountView() {
-  const wrapper = mount(ProfileView)
+  const wrapper = mount(StudentProfileForm)
   await flushPromises()
   return wrapper
 }
@@ -46,7 +49,7 @@ function checkbox(wrapper, label) {
   return wrapper.findAll('label').find((candidate) => candidate.text() === label).get('input')
 }
 
-describe('ProfileView', () => {
+describe('StudentProfileForm', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     profileApi.fetchStudentPhoto.mockRejectedValue(new ApiError(404, 'No photo'))
@@ -58,7 +61,7 @@ describe('ProfileView', () => {
     const wrapper = await mountView()
 
     expect(wrapper.text()).toContain('Léa Martin')
-    expect(wrapper.text()).toContain('il manque votre photo, au moins une compétence, votre date de naissance, votre adresse, votre niveau d’études')
+    expect(wrapper.text()).toContain('il manque votre photo, au moins une compétence, votre date de naissance, votre adresse, votre niveau d’études, votre présentation')
     expect(wrapper.find('#birth-date').exists()).toBe(true)
     expect(wrapper.text()).toContain('Ajouter ma photo')
   })
@@ -78,6 +81,7 @@ describe('ProfileView', () => {
     await wrapper.get('#city').setValue('Lille')
     await checkbox(wrapper, 'Conversation et compagnie').setValue(true)
     await checkbox(wrapper, 'Promenade, y compris en poussant un fauteuil roulant').setValue(true)
+    await wrapper.get('#presentation').setValue(`  ${PRESENTATION}  `)
     await wrapper.get('form').trigger('submit')
     await flushPromises()
 
@@ -88,6 +92,7 @@ describe('ProfileView', () => {
       sex: 'FEMALE',
       studyLevel: 'BAC_3',
       skills: ['CONVERSATION', 'WALK'],
+      presentation: PRESENTATION,
     })
     expect(wrapper.text()).toContain('Votre profil est enregistré.')
     expect(wrapper.text()).toContain('21 ans')
@@ -117,14 +122,14 @@ describe('ProfileView', () => {
   })
 
   it('explains a refused birth date', async () => {
-    profileApi.fetchMyProfile.mockResolvedValue(profile({ skills: ['CONVERSATION'] }))
+    profileApi.fetchMyProfile.mockResolvedValue(profile({ skills: ['CONVERSATION'], presentation: PRESENTATION }))
     profileApi.updateMyProfile.mockRejectedValue(new ApiError(400, 'Too young', 'UNDERAGE'))
     const wrapper = await mountView()
 
     await wrapper.get('form').trigger('submit')
     await flushPromises()
 
-    expect(wrapper.get('[role="alert"]').text()).toBe('Il faut avoir au moins 18 ans pour proposer son aide sur Intergee.')
+    expect(wrapper.get('[role="alert"]').text()).toBe('Il faut avoir au moins 18 ans pour proposer son aide sur Geen.')
   })
 
   it('uploads a photo and refuses another format or a too large file', async () => {
@@ -156,5 +161,24 @@ describe('ProfileView', () => {
     expect(profileApi.uploadMyPhoto.mock.calls[0][0].name).toBe('lea.png')
     expect(wrapper.text()).toContain('Votre photo est enregistrée.')
     expect(wrapper.text()).toContain('Changer ma photo')
+  })
+
+  it('asks for a presentation of 300 characters at least, with a counter', async () => {
+    // Given
+    profileApi.fetchMyProfile.mockResolvedValue({ ...COMPLETE, presentation: null })
+    const wrapper = await mountView()
+    const field = wrapper.get('#presentation')
+    expect(field.attributes('aria-describedby')).toContain('presentation-count')
+    expect(wrapper.text()).toContain("N'indiquez aucune information sur votre santé ou un handicap.")
+
+    // When
+    await field.setValue('Bonjour, je suis Léa.')
+    await wrapper.get('form').trigger('submit')
+
+    // Then
+    expect(profileApi.updateMyProfile).not.toHaveBeenCalled()
+    expect(wrapper.get('#presentation-count').text()).toBe('21 caractères : encore 279 au minimum')
+    expect(wrapper.text()).toContain('Votre présentation doit faire au moins 300 caractères : il en manque 279.')
+    expect(field.attributes('aria-invalid')).toBe('true')
   })
 })

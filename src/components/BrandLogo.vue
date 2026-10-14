@@ -1,7 +1,7 @@
 <script setup>
 /**
- * The Intergee mark and name, as shown in the header. The mark is the heart of the site icon, made of two halves:
- * at launch they come towards each other and meet, then the heart beats once, while "Inter" and "gee" slide in from
+ * The Geen mark and name, as shown in the header. The mark is the heart of the site icon, made of two halves:
+ * at launch they come towards each other and meet, then the heart beats once, while "Ge" and "en" slide in from
  * either side to form the word: two generations coming together. About a second, played once when the page loads,
  * then still; skipped when reduced motion is asked.
  */
@@ -20,8 +20,8 @@
       </g>
     </svg>
     <!-- Read as one word; the two animated halves are hidden from assistive tech -->
-    <span class="sr-only">Intergee</span>
-    <span class="word" aria-hidden="true"><span class="word__part word__part--left">Inter</span><span class="word__part word__part--right">gee</span></span>
+    <span class="sr-only">Geen</span>
+    <span class="word" aria-hidden="true"><span class="word__part word__part--left">Ge</span><span class="word__part word__part--right">en</span></span>
   </span>
 </template>
 
@@ -48,7 +48,7 @@
   animation: heart-beat 450ms ease-in-out 850ms both;
 }
 
-/* The word: "Inter" from the left, "gee" from the right, slightly after the mark */
+/* The word: "Ge" from the left, "en" from the right, slightly after the mark */
 .word {
   display: inline-flex;
   /* Each half appears from the word's own edge, never over the mark */

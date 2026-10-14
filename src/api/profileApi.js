@@ -8,7 +8,7 @@ export async function fetchMyProfile() {
 
 /**
  * @param {{birthDate?: string, address: {street: string, postalCode: string, city: string}, sex: string,
- *   studyLevel: string, skills: string[]}} profile the birth date is given once, then locked
+ *   studyLevel: string, skills: string[], presentation: string}} profile the birth date is given once, then locked
  */
 export async function updateMyProfile(profile) {
   const { data } = await http.put('/students/me/profile', profile)
@@ -29,5 +29,19 @@ export async function uploadMyPhoto(file) {
  */
 export async function fetchStudentPhoto(studentId) {
   const { data } = await http.get(`/students/${encodeURIComponent(studentId)}/photo`, { responseType: 'blob' })
+  return data
+}
+
+/** Profile of the authenticated beneficiary (spec 012): name, email, phone, address and presentation. */
+export async function fetchMyBeneficiaryProfile() {
+  const { data } = await http.get('/beneficiaries/me/profile')
+  return data
+}
+
+/**
+ * @param {{phone: string, address: {street: string, postalCode: string, city: string}, presentation: string}} profile
+ */
+export async function updateMyBeneficiaryProfile(profile) {
+  const { data } = await http.put('/beneficiaries/me/profile', profile)
   return data
 }

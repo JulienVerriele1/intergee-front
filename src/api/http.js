@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import { toApiError } from './apiError'
 
 /**
- * Axios instance for the Intergee API only: the JWT must never be sent to third-party services.
+ * Axios instance for the Geen API only: the JWT must never be sent to third-party services.
  */
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',

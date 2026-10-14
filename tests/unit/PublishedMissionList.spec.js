@@ -37,7 +37,7 @@ function page(items, { number = 0, totalItems = items.length } = {}) {
 }
 
 const CANDIDATES = [
-  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING', averageRating: 4.5, reviewCount: 2, age: 21, studyLevel: 'BAC_3', skills: ['CONVERSATION', 'SMARTPHONE_TABLET'], hasPhoto: true, matchingSkills: ['SMARTPHONE_TABLET'] },
+  { applicantId: 'lea', firstName: 'Léa', school: 'Université de Lille', verified: true, appliedAt: '2026-12-01T10:00:00Z', status: 'PENDING', averageRating: 4.5, reviewCount: 2, age: 21, studyLevel: 'BAC_3', skills: ['CONVERSATION', 'SMARTPHONE_TABLET'], hasPhoto: true, matchingSkills: ['SMARTPHONE_TABLET'], presentation: 'Étudiante en lettres, j’aime lire à voix haute.' },
   { applicantId: 'tom', firstName: 'Tom', school: 'IUT de Lille', verified: true, appliedAt: '2026-12-01T11:00:00Z', status: 'PENDING', averageRating: null, reviewCount: 0, age: 19, studyLevel: 'BAC_1', skills: ['GARDENING'], hasPhoto: false, matchingSkills: [] },
 ]
 
@@ -199,7 +199,13 @@ describe('PublishedMissionList', () => {
   it('shows the contact of the assigned student', async () => {
     missionApi.fetchMyMissions.mockResolvedValue(page([published({ status: 'ASSIGNED', assignedStudentFirstName: 'Léa' })]))
     missionApi.fetchAssignment.mockResolvedValue({
-      student: { firstName: 'Léa', lastName: 'Martin', school: 'Université de Lille', email: 'lea@univ-lille.fr' },
+      student: {
+        firstName: 'Léa',
+        lastName: 'Martin',
+        school: 'Université de Lille',
+        email: 'lea@univ-lille.fr',
+        presentation: 'Étudiante en lettres.',
+      },
     })
     const wrapper = await mountList()
     expect(wrapper.get('tbody').text()).toContain('Attribuée à Léa')
@@ -210,6 +216,11 @@ describe('PublishedMissionList', () => {
     expect(hasButton(wrapper, 'Voir le contact de Léa')).toBe(false)
     expect(wrapper.text()).toContain('Léa Martin')
     expect(wrapper.get('a[href="mailto:lea@univ-lille.fr"]').exists()).toBe(true)
+    // Her presentation, open (spec 012, RG-6)
+    const presentation = wrapper.get('details')
+    expect(presentation.attributes('open')).toBeDefined()
+    expect(presentation.get('summary').text()).toBe('Présentation de Léa')
+    expect(presentation.text()).toContain('Étudiante en lettres.')
   })
 
   it('confirms a mission once its slot is over', async () => {
@@ -298,6 +309,22 @@ describe('PublishedMissionList', () => {
     expect(rows.map((row) => row.attributes('id') ?? row.get('th').text())).toEqual(['Mission 1', 'Mission 2', 'mission-detail'])
     expect(buttonNamed(wrapper, 'Mission 1').attributes('aria-expanded')).toBe('false')
     expect(buttonNamed(wrapper, 'Mission 2').attributes('aria-expanded')).toBe('true')
+    wrapper.unmount()
+  })
+
+  it('shows the presentation of each candidate, collapsed', async () => {
+    missionApi.fetchMyMissions.mockResolvedValue(page([published()]))
+    missionApi.fetchApplications.mockResolvedValue(CANDIDATES)
+    const wrapper = await mountList()
+
+    await openDetail(wrapper)
+
+    // Tom has none yet: nothing is shown for him
+    const presentations = wrapper.findAll('details')
+    expect(presentations).toHaveLength(1)
+    expect(presentations[0].attributes('open')).toBeUndefined()
+    expect(presentations[0].get('summary').text()).toBe('Présentation de Léa')
+    expect(presentations[0].text()).toContain('j’aime lire à voix haute')
     wrapper.unmount()
   })
 })

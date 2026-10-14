@@ -1,6 +1,6 @@
-# Intergee — Front-end
+# Geen — Front-end
 
-SPA Vue 3 de la plateforme Intergee, qui met en relation des étudiants et des personnes âgées ou en situation
+SPA Vue 3 de la plateforme Geen, qui met en relation des étudiants et des personnes âgées ou en situation
 de handicap. Elle consomme l'API Spring Boot du dépôt [`intergee`](../intergee).
 
 Stack : Vue 3 (`<script setup>`), Vite, Vue Router, Pinia, Tailwind CSS 4, Axios, Vitest.
@@ -101,7 +101,7 @@ Les routes déclarent `meta.requiresAuth`, `meta.roles` et `meta.guestOnly` ; `r
 
 ## Design system
 
-L'interface applique le design system **Intergee** (lisible, facile à toucher, chaleureux). Les jetons vivent dans
+L'interface applique le design system **Geen** (lisible, facile à toucher, chaleureux). Les jetons vivent dans
 `src/assets/main.css` : chaque valeur est une variable `--ig-*` (thème clair, et thème sombre via
 `prefers-color-scheme`), exposée à Tailwind par `@theme`.
 
@@ -117,9 +117,15 @@ L'interface applique le design system **Intergee** (lisible, facile à toucher, 
   (`composables/useTheme.js`, mémorisé dans `localStorage`).
 - Fond : `AppBackdrop` pose, entre l'en-tête et le pied de page, les formes du design system (disque, demi-disques
   qui se font face, pilules) en couleurs douces sur fond transparent ; décoratif (`aria-hidden`), non imprimé.
-- Logo : `BrandLogo` (en-tête). Au chargement, les deux demi-disques du symbole se rejoignent et « Inter » et « gee »
-  glissent l'un vers l'autre pour former le nom (900 ms, une fois), puis tout reste immobile ; aucune animation si
-  `prefers-reduced-motion`. Les lecteurs d'écran lisent « Intergee ».
+- Logo : `BrandLogo` (en-tête). Au chargement, les deux moitiés du cœur se rejoignent et il bat une fois, tandis que
+  « Ge » et « en » glissent l'un vers l'autre pour former le nom (900 ms, une fois), puis tout reste immobile ; aucune animation si
+  `prefers-reduced-motion`. Les lecteurs d'écran lisent « Geen ».
+- Pagination : `PaginationNav` (`page`, `totalPages`, `label`, événement `go`), sous chaque liste ou tableau.
+  « Précédente » / « Suivante » en pilules, numéros de page ronds de 44px (la page courante en `primary`, annoncée
+  par `aria-current`), la première, la dernière et les voisines de la page courante, « … » pour les autres
+  (`utils/pagination.js`). Sur téléphone : deux flèches rondes et « Page 2 sur 5 ».
+- Filtres : `FilterSelect`, liste native en pilule avec son libellé sur la même ligne, bordure `primary` quand un
+  filtre s'applique.
 - Dates : `DateTimePicker` (calendrier mensuel à cases de 56px, navigation au clavier, puis créneaux d'une
   demi-heure de 8 h à 20 h) remplace le `datetime-local` natif, illisible et non stylable. Même valeur
   `AAAA-MM-JJTHH:mm`, donc même validation.

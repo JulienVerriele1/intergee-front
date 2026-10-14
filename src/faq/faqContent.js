@@ -21,7 +21,8 @@ export const FAQ = Object.freeze({
         {
           question: 'Pourquoi dois-je compléter mon profil ?',
           answer: [
-            'Pour postuler, votre profil doit être complet : une photo de votre visage, au moins une compétence, votre date de naissance, votre adresse et votre niveau d’études. Le sexe est facultatif.',
+            'Pour postuler, votre profil doit être complet : une photo de votre visage, au moins une compétence, votre date de naissance, votre adresse, votre niveau d’études et une présentation de 300 à 1 000 caractères. Le sexe est facultatif.',
+            'Votre présentation est lue par les bénéficiaires et les aidants qui choisissent parmi les candidats. N’y indiquez aucune information sur votre santé.',
             'Vous le complétez dans « Mon profil », depuis le menu en haut à droite.',
           ],
         },
@@ -88,7 +89,7 @@ export const FAQ = Object.freeze({
         {
           question: 'Et la compensation ?',
           answer: [
-            'Son montant est indiqué sur chaque mission. Son versement n’est pas encore géré par Intergee.',
+            'Son montant est indiqué sur chaque mission. Son versement n’est pas encore géré par Geen.',
           ],
         },
         {
@@ -125,6 +126,7 @@ export const FAQ = Object.freeze({
           question: 'Comment créer mon compte ?',
           answer: [
             'Sur la page de connexion, choisissez « Créer un compte », puis « Je suis bénéficiaire ». Indiquez votre adresse et votre téléphone.',
+            'Avant votre première mission, présentez-vous dans « Mon profil », depuis le menu en haut à droite : de 300 à 1 000 caractères. Seul l’étudiant que vous choisissez lit votre présentation.',
           ],
         },
         {
@@ -136,7 +138,7 @@ export const FAQ = Object.freeze({
         {
           question: 'Quelles informations sur ma santé dois-je donner ?',
           answer: [
-            'Aucune. Intergee ne demande jamais d’information sur la santé ou le handicap : décrivez seulement la tâche à réaliser.',
+            'Aucune. Geen ne demande jamais d’information sur la santé ou le handicap : décrivez seulement la tâche à réaliser.',
           ],
         },
       ],
@@ -165,7 +167,7 @@ export const FAQ = Object.freeze({
         {
           question: 'Mon adresse est-elle visible ?',
           answer: [
-            'Non. Les étudiants ne voient que le code postal, la ville et la distance. Votre adresse et votre téléphone sont communiqués uniquement à l’étudiant que vous choisissez.',
+            'Non. Les étudiants ne voient que le code postal, la ville et la distance. Votre adresse, votre téléphone et votre présentation sont communiqués uniquement à l’étudiant que vous choisissez.',
           ],
         },
       ],

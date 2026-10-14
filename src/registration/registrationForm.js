@@ -7,6 +7,16 @@ const POSTAL_CODE_PATTERN = /^\d{5}$/
 // French numbers, with or without spaces, dots or dashes: 06 12 34 56 78 or +33 6 12 34 56 78
 const PHONE_PATTERN = /^(0[1-9]\d{8}|\+33[1-9]\d{8})$/
 
+export function isFrenchPhone(phone) {
+  return PHONE_PATTERN.test((phone ?? '').replace(/[\s.-]/g, ''))
+}
+
+/** +33320123456, as stored by the server, shown as 03 20 12 34 56 */
+export function nationalPhone(phone) {
+  const national = (phone ?? '').replace(/^\+33/, '0')
+  return /^0\d{9}$/.test(national) ? national.replace(/(\d{2})(?=\d)/g, '$1 ') : phone
+}
+
 export function emptyStudentForm() {
   return { firstName: '', lastName: '', email: '', password: '', school: '', postalCode: '', city: '', radiusKm: 10 }
 }
@@ -42,7 +52,7 @@ export function validateStudent(form) {
 /** @returns {Record<string, string>} errors by field, empty when valid */
 export function validateBeneficiary(form) {
   const errors = validateAccount(form)
-  if (!PHONE_PATTERN.test(form.phone.replace(/[\s.-]/g, ''))) {
+  if (!isFrenchPhone(form.phone)) {
     errors.phone = 'Saisissez un numéro français, par exemple 06 12 34 56 78.'
   }
   if (!required(form.street)) errors.street = 'Saisissez le numéro et la rue.'

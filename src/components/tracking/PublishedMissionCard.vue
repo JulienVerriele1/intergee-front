@@ -10,6 +10,7 @@ import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
 import StarRating from '@/components/reviews/StarRating.vue'
 import StudentPhoto from '@/components/ui/StudentPhoto.vue'
 import { skillLabel, studyLevelLabel } from '@/constants/profileOptions'
+import PresentationText from '@/components/profile/PresentationText.vue'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -137,6 +138,13 @@ async function confirm() {
                   <span v-if="candidate.matchingSkills?.includes(skill)" class="sr-only">(demandée pour la mission)</span>
                 </li>
               </ul>
+              <!-- To choose knowing who will come (spec 012, RG-6) -->
+              <PresentationText
+                v-if="candidate.presentation"
+                :text="candidate.presentation"
+                :title="`Présentation de ${candidate.firstName}`"
+                class="mt-3"
+              />
             </div>
           </div>
           <button type="button" class="btn-primary" @click="pendingConfirmation = { type: 'assign', candidate }">
@@ -162,6 +170,12 @@ async function confirm() {
           </div>
         </dl>
       </div>
+      <PresentationText
+        v-if="assignment?.student.presentation"
+        :text="assignment.student.presentation"
+        :title="`Présentation de ${assignment.student.firstName}`"
+        open
+      />
       <button v-if="canConfirm" type="button" class="btn-primary self-start" @click="pendingConfirmation = { type: 'complete' }">
         Confirmer que la mission a eu lieu
       </button>

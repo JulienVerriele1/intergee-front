@@ -1,5 +1,7 @@
 <script setup>
+import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { fetchMyBeneficiaryProfile } from '@/api/profileApi'
 import { useAuthStore } from '@/stores/auth'
 import { ROLES } from '@/constants/roles'
 import PublishMissionPanel from '@/components/missions/PublishMissionPanel.vue'
@@ -7,6 +9,20 @@ import PublishedMissionList from '@/components/tracking/PublishedMissionList.vue
 
 // Beneficiaries and caregivers only: students are redirected to their dashboard (see router)
 const { role } = storeToRefs(useAuthStore())
+
+// A beneficiary publishes once their presentation is given (spec 012, RG-3): until then, the panel leads to the
+// profile. Assumed complete when unknown: the server refuses anyway, with an explanation.
+const profileComplete = ref(true)
+onMounted(async () => {
+  if (role.value !== ROLES.BENEFICIARY) {
+    return
+  }
+  try {
+    profileComplete.value = (await fetchMyBeneficiaryProfile()).complete
+  } catch {
+    profileComplete.value = true
+  }
+})
 </script>
 
 <template>
@@ -17,7 +33,7 @@ const { role } = storeToRefs(useAuthStore())
         Choisissez un étudiant parmi les candidats, puis confirmez la mission une fois réalisée.
       </p>
     </div>
-    <PublishMissionPanel :is-caregiver="role === ROLES.CAREGIVER" />
+    <PublishMissionPanel :is-caregiver="role === ROLES.CAREGIVER" :profile-complete="profileComplete" />
     <div class="panel">
       <PublishedMissionList :is-caregiver="role === ROLES.CAREGIVER" />
     </div>

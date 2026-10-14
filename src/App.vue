@@ -44,7 +44,7 @@ router.afterEach((to, from) => {
     </div>
     <footer class="flex flex-col items-center gap-2 border-t border-border-subtle bg-surface-sunken py-6 text-center text-base text-ink-muted">
       <RouterLink :to="{ name: 'faq' }" class="link">Questions fréquentes</RouterLink>
-      <span>Intergee — entraide entre générations</span>
+      <span>Geen — entraide entre générations</span>
     </footer>
   </div>
 </template>

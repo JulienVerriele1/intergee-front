@@ -137,4 +137,22 @@ describe('StudentApplicationsTable', () => {
 
     expect(wrapper.get('svg[viewBox="0 0 240 170"]').attributes('aria-hidden')).toBe('true')
   })
+
+  it('shows the presentation of the beneficiary to the retained student', async () => {
+    missionApi.fetchMyApplications.mockResolvedValue(page([application('Courses', '2026-12-05T08:00:00Z')]))
+    missionApi.fetchAssignment.mockResolvedValue({
+      location: { street: '1 place du Général de Gaulle', postalCode: '59000', city: 'Lille', latitude: 50.6, longitude: 3.06 },
+      beneficiary: { firstName: 'Jeanne', lastName: 'Démo', phone: '+33320000000', presentation: 'Institutrice à la retraite.' },
+    })
+    const wrapper = mount(StudentApplicationsTable, { attachTo: document.body })
+    await flushPromises()
+
+    await wrapper.get('tbody tr').trigger('click')
+    await flushPromises()
+
+    const presentation = wrapper.get('#application-detail details')
+    expect(presentation.get('summary').text()).toBe('Présentation de Jeanne')
+    expect(presentation.text()).toContain('Institutrice à la retraite.')
+    wrapper.unmount()
+  })
 })
