@@ -1,5 +1,6 @@
 <script setup>
 import { categoryLabel } from '@/constants/missionCategories'
+import { skillLabel } from '@/constants/profileOptions'
 import { formatDateTime, formatDuration, formatEuros } from '@/utils/formatters'
 
 /** Title, date and place shared by the tracking cards: never the street (spec 009, RG-3). */
@@ -33,5 +34,12 @@ defineProps({
         <dd>{{ formatEuros(mission.reward) }}</dd>
       </div>
     </dl>
+    <!-- Given with the applications of a student only (spec 009, RG-3) -->
+    <div v-if="mission.requiredSkills?.length" class="flex flex-col gap-2 text-base">
+      <p class="font-bold text-ink-muted">Compétences demandées</p>
+      <ul role="list" class="flex flex-wrap gap-2">
+        <li v-for="skill in mission.requiredSkills" :key="skill" class="tag bg-surface-sunken pl-3">{{ skillLabel(skill) }}</li>
+      </ul>
+    </div>
   </div>
 </template>

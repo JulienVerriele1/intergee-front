@@ -61,6 +61,12 @@ const routes = [
     meta: { guestOnly: true, title: 'Inscription bénéficiaire' },
   },
   {
+    path: '/faq',
+    name: 'faq',
+    component: () => import('@/views/FaqView.vue'),
+    meta: { title: 'Questions fréquentes' },
+  },
+  {
     path: '/forbidden',
     name: 'forbidden',
     component: () => import('@/views/ForbiddenView.vue'),

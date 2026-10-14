@@ -19,13 +19,14 @@ export async function withdrawApplication(missionId) {
 /**
  * Open missions within the intervention area of the authenticated student (spec 004).
  *
- * @param {{category?: string, page?: number, size?: number}} criteria
+ * @param {{category?: string, excludeApplied?: boolean, page?: number, size?: number}} criteria
+ * `excludeApplied` leaves out the missions the student applied to (spec 004, RG-8).
  * Each item has `alreadyApplied`: whether the student applied to it.
  * @returns {Promise<{items: object[], page: number, size: number, totalItems: number, totalPages: number}>}
  */
-export async function fetchOpenMissions({ category, page = 0, size = 20 } = {}) {
+export async function fetchOpenMissions({ category, excludeApplied = false, page = 0, size = 20 } = {}) {
   const { data } = await http.get('/missions/open', {
-    params: { ...(category && { category }), page, size },
+    params: { ...(category && { category }), ...(excludeApplied && { excludeApplied }), page, size },
   })
   return data
 }

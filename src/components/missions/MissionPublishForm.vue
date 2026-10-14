@@ -1,10 +1,10 @@
 <script setup>
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { publishMission } from '@/api/missionApi'
-import { geocodeAddress } from '@/api/geocodingApi'
 import { MISSION_CATEGORIES } from '@/constants/missionCategories'
 import { skillFamiliesForCategory } from '@/constants/profileOptions'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
+import AddressAutocomplete from '@/components/ui/AddressAutocomplete.vue'
 import FormField from '@/components/ui/FormField.vue'
 import DateTimePicker from '@/components/ui/DateTimePicker.vue'
 import { formatDateTime, formatDuration } from '@/utils/formatters'
@@ -25,8 +25,7 @@ const props = defineProps({
 
 const form = reactive(emptyMissionForm())
 const errors = ref({})
-const location = ref(null) // address confirmed by the user, with its coordinates
-const locating = ref(false)
+const location = ref(null) // address chosen among the suggestions, with its coordinates
 const locationError = ref('')
 const submitting = ref(false)
 const submitError = ref('')
@@ -43,7 +42,6 @@ watch(() => form.category, () => {
   form.requiredSkills = form.requiredSkills.filter((skill) => allowed.has(skill))
 })
 
-const addressFilled = computed(() => form.street.trim() && /^\d{5}$/.test(form.postalCode.trim()) && form.city.trim())
 
 // Any change to the address invalidates the previously located one
 watch(() => [form.street, form.postalCode, form.city], () => {
@@ -51,19 +49,14 @@ watch(() => [form.street, form.postalCode, form.city], () => {
   locationError.value = ''
 })
 
-async function locateAddress() {
-  locating.value = true
+// Choosing a suggested address fills the fields, then locates the mission: the watch above has run in between
+async function onAddressSelected(address) {
+  form.street = address.street
+  form.postalCode = address.postalCode
+  form.city = address.city
+  await nextTick()
+  location.value = { label: address.label, latitude: address.latitude, longitude: address.longitude }
   locationError.value = ''
-  try {
-    location.value = await geocodeAddress(form)
-    if (!location.value) {
-      locationError.value = 'Adresse introuvable. Vérifiez la rue, le code postal et la ville.'
-    }
-  } catch {
-    locationError.value = 'Le service de localisation est indisponible. Réessayez dans un instant.'
-  } finally {
-    locating.value = false
-  }
 }
 
 async function submit() {
@@ -71,7 +64,7 @@ async function submit() {
   publishedMission.value = null
   errors.value = validateMissionForm(form, { requiresBeneficiary: props.requiresBeneficiary })
   if (!location.value) {
-    locationError.value ||= 'Localisez et vérifiez l’adresse avant de publier.'
+    locationError.value ||= 'Choisissez l’adresse dans la liste proposée sous « Numéro et rue ».'
   }
   if (Object.keys(errors.value).length > 0 || !location.value) {
     await focusFirstInvalidField()
@@ -95,7 +88,7 @@ async function submit() {
 
 async function focusFirstInvalidField() {
   await nextTick()
-  formElement.value?.querySelector('[aria-invalid="true"], #locate-address')?.focus()
+  formElement.value?.querySelector('[aria-invalid="true"], #street')?.focus()
 }
 </script>
 
@@ -263,15 +256,14 @@ async function focusFirstInvalidField() {
 
       <fieldset class="grid gap-5 rounded-lg border border-border-subtle p-4 sm:col-span-2 sm:grid-cols-6">
         <legend class="px-1 font-bold text-ink">Lieu de la mission</legend>
-        <FormField id="street" v-slot="field" class="sm:col-span-6" label="Numéro et rue" :error="errors.street" required>
-          <input
+        <FormField id="street" v-slot="field" class="sm:col-span-6" label="Numéro et rue" help="Tapez les premiers caractères, puis choisissez l'adresse proposée." :error="errors.street" required>
+          <AddressAutocomplete
             :id="field.id"
             v-model="form.street"
-            class="form-input"
-            autocomplete="street-address"
-            :aria-describedby="field.describedBy"
-            :aria-invalid="field.invalid"
+            :described-by="field.describedBy"
+            :invalid="field.invalid"
             required
+            @select="onAddressSelected"
           />
         </FormField>
         <FormField id="postalCode" v-slot="field" class="sm:col-span-2" label="Code postal" :error="errors.postalCode" required>
@@ -300,18 +292,9 @@ async function focusFirstInvalidField() {
         </FormField>
 
         <div class="flex flex-col gap-3 sm:col-span-6" aria-live="polite">
-          <button
-            id="locate-address"
-            type="button"
-            class="btn-secondary self-start"
-            :disabled="!addressFilled || locating"
-            @click="locateAddress"
-          >
-            {{ locating ? 'Localisation…' : 'Vérifier l’adresse' }}
-          </button>
           <p v-if="location" class="rounded-lg border-2 border-success bg-success-soft px-4 py-3 text-ink">
             Adresse reconnue : <strong>{{ location.label }}</strong>.
-            Si ce n'est pas la bonne, corrigez les champs ci-dessus.
+            Si ce n'est pas la bonne, choisissez-en une autre dans « Numéro et rue ».
           </p>
           <p v-if="locationError" class="rounded-lg bg-danger-soft px-4 py-3 font-bold text-ink">{{ locationError }}</p>
         </div>

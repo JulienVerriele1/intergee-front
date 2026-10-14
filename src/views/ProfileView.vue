@@ -4,6 +4,7 @@ import { fetchMyProfile, updateMyProfile, uploadMyPhoto } from '@/api/profileApi
 import { PHOTO_MAX_BYTES, PHOTO_MEDIA_TYPES, SEXES, SKILL_FAMILIES, STUDY_LEVELS } from '@/constants/profileOptions'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
+import AddressAutocomplete from '@/components/ui/AddressAutocomplete.vue'
 import FormField from '@/components/ui/FormField.vue'
 import StudentPhoto from '@/components/ui/StudentPhoto.vue'
 
@@ -52,6 +53,12 @@ async function load() {
     loadError.value = missionErrorMessage(error)
     status.value = 'error'
   }
+}
+
+function fillAddress(address) {
+  form.value.street = address.street
+  form.value.postalCode = address.postalCode
+  form.value.city = address.city
 }
 
 async function save() {
@@ -191,9 +198,9 @@ onMounted(load)
         <section aria-labelledby="address-title" class="card flex flex-col gap-4">
           <h2 id="address-title" class="text-xl font-bold">Adresse</h2>
           <p class="text-ink-muted">Elle reste privée : elle n'est jamais montrée aux personnes que vous aidez.</p>
-          <FormField id="street" label="Rue" required>
-            <template #default="{ id }">
-              <input :id="id" v-model="form.street" type="text" autocomplete="address-line1" class="form-input" required />
+          <FormField id="street" label="Numéro et rue" help="Tapez les premiers caractères, puis choisissez l'adresse proposée." required>
+            <template #default="{ id, describedBy }">
+              <AddressAutocomplete :id="id" v-model="form.street" :described-by="describedBy" required @select="fillAddress" />
             </template>
           </FormField>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-[12rem_1fr]">

@@ -47,6 +47,17 @@ describe('MyMissionsView', () => {
     const { wrapper } = await mountView('CAREGIVER')
 
     expect(wrapper.get('a[href="/missions/publier"]').text()).toBe('Ajouter une mission')
+    expect(wrapper.get('#publish-mission-title').text()).toBe('Un coup de main pour la personne que vous accompagnez ?')
+  })
+
+  it('invites the beneficiary to publish in a panel with a decorative illustration', async () => {
+    const { wrapper } = await mountView('BENEFICIARY')
+
+    const panel = wrapper.get('section[aria-labelledby="publish-mission-title"]')
+    expect(panel.classes()).toContain('panel')
+    expect(panel.get('h2').text()).toBe('Besoin d’un coup de main ?')
+    expect(panel.get('svg').attributes('aria-hidden')).toBe('true')
+    expect(panel.find('a[href="/missions/publier"]').exists()).toBe(true)
   })
 
   it('offers no mission to add to a student', async () => {

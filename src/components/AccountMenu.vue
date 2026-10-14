@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
@@ -8,6 +8,9 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import ReceivedReviews from '@/components/reviews/ReceivedReviews.vue'
 
 /** Burger menu at the top right of the header: profile, received reviews and logout. */
+
+// Local development only: removed from the production build
+const DevRoleSwitch = import.meta.env.DEV ? defineAsyncComponent(() => import('@/dev/DevRoleSwitch.vue')) : null
 const auth = useAuthStore()
 const { role, userId } = storeToRefs(auth)
 const route = useRoute()
@@ -93,6 +96,14 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOnOutside
 
       <div class="p-5">
         <ReceivedReviews :show-names="role === ROLES.CAREGIVER" @loaded="onReputationsLoaded" />
+      </div>
+
+      <div class="p-5">
+        <RouterLink :to="{ name: 'faq' }" class="link">Questions fréquentes</RouterLink>
+      </div>
+
+      <div v-if="DevRoleSwitch" class="p-5">
+        <component :is="DevRoleSwitch" />
       </div>
 
       <div class="p-5">

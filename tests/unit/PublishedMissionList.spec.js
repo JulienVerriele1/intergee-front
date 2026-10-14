@@ -32,8 +32,8 @@ function published(overrides = {}) {
   }
 }
 
-function page(items) {
-  return { items, page: 0, size: 20, totalItems: items.length, totalPages: items.length > 0 ? 1 : 0 }
+function page(items, { number = 0, totalItems = items.length } = {}) {
+  return { items, page: number, size: 5, totalItems, totalPages: Math.ceil(totalItems / 5) }
 }
 
 const CANDIDATES = [
@@ -59,6 +59,12 @@ async function mountList(props = {}) {
   return wrapper
 }
 
+/** Shows the details of a mission, by clicking its row */
+async function openDetail(wrapper, index = 0) {
+  await wrapper.findAll('tbody tr')[index].trigger('click')
+  await flushPromises()
+}
+
 describe('PublishedMissionList', () => {
   beforeEach(() => {
     vi.resetAllMocks()
@@ -77,11 +83,27 @@ describe('PublishedMissionList', () => {
 
     const wrapper = await mountList()
 
-    expect(missionApi.fetchMyMissions).toHaveBeenCalledWith({ period: 'RETAINED', page: 0, size: 20 })
-    expect(buttonNamed(wrapper, 'Retenu').attributes('aria-pressed')).toBe('true')
-    expect(wrapper.text()).toContain('Aide pour faire les courses')
-    expect(wrapper.text()).toContain('2 candidatures')
-    expect(wrapper.text()).not.toContain('Pour Jeanne')
+    expect(missionApi.fetchMyMissions).toHaveBeenCalledWith({ period: 'RETAINED', page: 0, size: 5 })
+    expect(buttonNamed(wrapper, 'Attribuées').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.findAll('thead th').map((cell) => cell.text())).toEqual(['Mission', 'Date', 'Statut'])
+    expect(wrapper.get('tbody th').text()).toBe('Aide pour faire les courses')
+    expect(wrapper.get('tbody').text()).toContain('2 candidatures')
+    expect(wrapper.find('#mission-detail').exists()).toBe(false)
+    expect(wrapper.findAll('[role="group"] button').every((button) => button.classes().includes('min-h-9'))).toBe(true)
+  })
+
+  it('pages through the missions, 5 at a time', async () => {
+    missionApi.fetchMyMissions
+      .mockResolvedValueOnce(page([1, 2, 3, 4, 5].map((index) => published({ id: `m${index}`, title: `Mission ${index}` })), { totalItems: 7 }))
+      .mockResolvedValueOnce(page([published({ id: 'm6', title: 'Mission 6' })], { number: 1, totalItems: 7 }))
+    const wrapper = await mountList()
+    expect(wrapper.text()).toContain('Page 1 sur 2')
+
+    await buttonNamed(wrapper, 'Suivante').trigger('click')
+    await flushPromises()
+
+    expect(missionApi.fetchMyMissions).toHaveBeenLastCalledWith({ period: 'RETAINED', page: 1, size: 5 })
+    expect(wrapper.findAll('tbody th').map((cell) => cell.text())).toEqual(['Mission 6'])
   })
 
   it('switches to the past missions', async () => {
@@ -91,7 +113,7 @@ describe('PublishedMissionList', () => {
     await buttonNamed(wrapper, 'Passées').trigger('click')
     await flushPromises()
 
-    expect(missionApi.fetchMyMissions).toHaveBeenLastCalledWith({ period: 'PAST', page: 0, size: 20 })
+    expect(missionApi.fetchMyMissions).toHaveBeenLastCalledWith({ period: 'PAST', page: 0, size: 5 })
     expect(wrapper.text()).toContain('Aucune mission passée.')
   })
 
@@ -113,7 +135,7 @@ describe('PublishedMissionList', () => {
     await buttonNamed(wrapper, 'À venir').trigger('click')
     await flushPromises()
 
-    expect(missionApi.fetchMyMissions).toHaveBeenLastCalledWith({ period: 'UPCOMING', page: 0, size: 20 })
+    expect(missionApi.fetchMyMissions).toHaveBeenLastCalledWith({ period: 'UPCOMING', page: 0, size: 5 })
     expect(wrapper.text()).toContain('Aucune mission à venir.')
   })
 
@@ -123,8 +145,8 @@ describe('PublishedMissionList', () => {
     missionApi.fetchApplications.mockResolvedValue(CANDIDATES)
     missionApi.assignMission.mockResolvedValue({})
     const wrapper = await mountList()
-    await buttonNamed(wrapper, 'Voir les candidats').trigger('click')
-    await flushPromises()
+    await openDetail(wrapper)
+    expect(hasButton(wrapper, 'Voir les candidats')).toBe(false)
     expect(wrapper.text()).toContain('Université de Lille')
     expect(wrapper.find('[aria-label="Note : 4,5 sur 5 (2 avis)"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('Léa, 21 ans')
@@ -151,8 +173,7 @@ describe('PublishedMissionList', () => {
     missionApi.fetchMyMissions.mockResolvedValue(page([published()]))
     missionApi.fetchApplications.mockResolvedValue(CANDIDATES)
     const wrapper = await mountList()
-    await buttonNamed(wrapper, 'Voir les candidats').trigger('click')
-    await flushPromises()
+    await openDetail(wrapper)
 
     await buttonNamed(wrapper, 'Choisir Tom').trigger('click')
     await buttonNamed(wrapper, 'Annuler').trigger('click')
@@ -166,8 +187,7 @@ describe('PublishedMissionList', () => {
     missionApi.fetchApplications.mockResolvedValue(CANDIDATES)
     missionApi.assignMission.mockRejectedValue(new ApiError(409, 'Already assigned', 'MISSION_ALREADY_ASSIGNED'))
     const wrapper = await mountList()
-    await buttonNamed(wrapper, 'Voir les candidats').trigger('click')
-    await flushPromises()
+    await openDetail(wrapper)
 
     await buttonNamed(wrapper, 'Choisir Léa').trigger('click')
     await wrapper.get('dialog').findAll('button').at(1).trigger('click')
@@ -182,12 +202,12 @@ describe('PublishedMissionList', () => {
       student: { firstName: 'Léa', lastName: 'Martin', school: 'Université de Lille', email: 'lea@univ-lille.fr' },
     })
     const wrapper = await mountList()
+    expect(wrapper.get('tbody').text()).toContain('Attribuée à Léa')
 
-    expect(wrapper.text()).toContain('Attribuée à Léa')
+    await openDetail(wrapper)
+
     expect(hasButton(wrapper, 'Confirmer que la mission a eu lieu')).toBe(false)
-    await buttonNamed(wrapper, 'Voir le contact de Léa').trigger('click')
-    await flushPromises()
-
+    expect(hasButton(wrapper, 'Voir le contact de Léa')).toBe(false)
     expect(wrapper.text()).toContain('Léa Martin')
     expect(wrapper.get('a[href="mailto:lea@univ-lille.fr"]').exists()).toBe(true)
   })
@@ -199,7 +219,8 @@ describe('PublishedMissionList', () => {
     ]))
     missionApi.completeMission.mockResolvedValue({})
     const wrapper = await mountList()
-    expect(wrapper.text()).toContain('À confirmer')
+    expect(wrapper.get('tbody').text()).toContain('À confirmer')
+    await openDetail(wrapper)
 
     // When
     await buttonNamed(wrapper, 'Confirmer que la mission a eu lieu').trigger('click')
@@ -218,6 +239,7 @@ describe('PublishedMissionList', () => {
     ]))
     reviewApi.submitReview.mockResolvedValue({})
     const wrapper = await mountList()
+    await openDetail(wrapper)
 
     // When
     await buttonNamed(wrapper, 'Évaluer Léa').trigger('click')
@@ -238,8 +260,10 @@ describe('PublishedMissionList', () => {
 
     const wrapper = await mountList()
 
+    await openDetail(wrapper, 0)
     expect(wrapper.text()).toContain('Avis envoyé')
     expect(hasButton(wrapper, 'Évaluer Léa')).toBe(false)
+    await openDetail(wrapper, 1)
     expect(hasButton(wrapper, 'Évaluer Tom')).toBe(false)
   })
 
@@ -249,11 +273,31 @@ describe('PublishedMissionList', () => {
       published({ id: 'm2', title: 'Jardin de Marcel', beneficiary: { id: 'marcel', firstName: 'Marcel' } }),
     ]))
     const wrapper = await mountList({ isCaregiver: true })
-    expect(wrapper.text()).toContain('Pour Jeanne')
+    expect(wrapper.findAll('thead th').map((cell) => cell.text())).toEqual(['Mission', 'Pour', 'Date', 'Statut'])
+    expect(wrapper.findAll('tbody td')[0].text()).toBe('Jeanne')
 
     await wrapper.get('#beneficiary-filter').setValue('marcel')
 
-    expect(wrapper.text()).toContain('Jardin de Marcel')
-    expect(wrapper.text()).not.toContain('Courses de Jeanne')
+    expect(wrapper.findAll('tbody th').map((cell) => cell.text())).toEqual(['Jardin de Marcel'])
+  })
+
+  it('opens the details right under their row, one mission at a time', async () => {
+    missionApi.fetchMyMissions.mockResolvedValue(page([
+      published({ id: 'm1', title: 'Mission 1' }),
+      published({ id: 'm2', title: 'Mission 2' }),
+    ]))
+    missionApi.fetchApplications.mockResolvedValue(CANDIDATES)
+    const wrapper = mount(PublishedMissionList, { attachTo: document.body })
+    await flushPromises()
+
+    await buttonNamed(wrapper, 'Mission 1').trigger('click')
+    await buttonNamed(wrapper, 'Mission 2').trigger('click')
+    await flushPromises()
+
+    const rows = wrapper.findAll('tbody > tr')
+    expect(rows.map((row) => row.attributes('id') ?? row.get('th').text())).toEqual(['Mission 1', 'Mission 2', 'mission-detail'])
+    expect(buttonNamed(wrapper, 'Mission 1').attributes('aria-expanded')).toBe('false')
+    expect(buttonNamed(wrapper, 'Mission 2').attributes('aria-expanded')).toBe('true')
+    wrapper.unmount()
   })
 })

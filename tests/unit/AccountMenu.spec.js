@@ -18,6 +18,7 @@ async function mountMenu(role) {
     routes: [
       { path: '/', name: 'dashboard', component: { template: '<p>dashboard</p>' } },
       { path: '/profil', name: 'profile', component: { template: '<p>profil</p>' } },
+      { path: '/faq', name: 'faq', component: { template: '<p>faq</p>' } },
     ],
   })
   await router.push('/')

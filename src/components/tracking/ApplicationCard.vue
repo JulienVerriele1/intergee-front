@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { fetchAssignment, withdrawApplication } from '@/api/missionApi'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import { applicationStatus, canReview } from '@/missions/missionTracking'
@@ -47,11 +47,18 @@ async function run(action) {
   }
 }
 
-function showAddress() {
+// The assigned student sees the address and the beneficiary straight away (spec 006, RG-6)
+function loadAssignment() {
   return run(async () => {
     assignment.value = await fetchAssignment(mission.value.id)
   })
 }
+
+onMounted(() => {
+  if (props.application.applicationStatus === 'ACCEPTED') {
+    loadAssignment()
+  }
+})
 
 function withdraw() {
   return run(async () => {
@@ -83,10 +90,8 @@ function withdraw() {
 
     <!-- The address is revealed to the assigned student only (spec 006, RG-6) -->
     <template v-if="application.applicationStatus === 'ACCEPTED'">
-      <button v-if="!assignment" type="button" class="btn-primary self-start" :disabled="busy" @click="showAddress">
-        Voir l'adresse et le contact
-      </button>
-      <dl v-else class="grid grid-cols-1 gap-2 rounded-lg bg-surface-sunken p-3 text-base sm:grid-cols-2">
+      <p v-if="!assignment && busy" role="status" class="text-ink-muted">Chargement de l’adresse et du contact…</p>
+      <dl v-if="assignment" class="grid grid-cols-1 gap-2 rounded-lg bg-surface-sunken p-3 text-base sm:grid-cols-2">
         <div>
           <dt class="font-bold text-ink-muted">Adresse</dt>
           <dd>

@@ -1,10 +1,13 @@
 <script setup>
-import { ref } from 'vue'
+import { defineAsyncComponent, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import FormField from '@/components/ui/FormField.vue'
 import { safeRedirect } from '@/utils/safeRedirect'
+
+// Local development only: removed from the production build, demo credentials included
+const LocalModePanel = import.meta.env.DEV ? defineAsyncComponent(() => import('@/dev/LocalModePanel.vue')) : null
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -37,6 +40,7 @@ async function submit() {
 
 <template>
   <div class="mx-auto w-full max-w-md">
+    <component :is="LocalModePanel" v-if="LocalModePanel" />
     <div class="card">
       <h1 class="mb-1 text-3xl font-bold">Connexion</h1>
       <p class="mb-6 text-ink-muted">Accédez à votre espace Intergee.</p>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { RouterView, useRoute, useRouter } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import AppHeader from '@/components/AppHeader.vue'
@@ -42,8 +42,9 @@ router.afterEach((to, from) => {
         <RouterView />
       </main>
     </div>
-    <footer class="border-t border-border-subtle bg-surface-sunken py-6 text-center text-base text-ink-muted">
-      Intergee — entraide entre générations
+    <footer class="flex flex-col items-center gap-2 border-t border-border-subtle bg-surface-sunken py-6 text-center text-base text-ink-muted">
+      <RouterLink :to="{ name: 'faq' }" class="link">Questions fréquentes</RouterLink>
+      <span>Intergee — entraide entre générations</span>
     </footer>
   </div>
 </template>

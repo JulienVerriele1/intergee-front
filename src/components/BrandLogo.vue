@@ -1,17 +1,23 @@
 <script setup>
 /**
- * The Intergee mark and name, as shown in the header. At launch the two half-discs of the mark come towards each
- * other and meet, while "Inter" and "gee" slide in from either side to form the word: two generations coming
- * together. Under a second, played once when the page loads, then still; skipped when reduced motion is asked.
+ * The Intergee mark and name, as shown in the header. The mark is the heart of the site icon, made of two halves:
+ * at launch they come towards each other and meet, then the heart beats once, while "Inter" and "gee" slide in from
+ * either side to form the word: two generations coming together. About a second, played once when the page loads,
+ * then still; skipped when reduced motion is asked.
  */
 </script>
 
 <template>
   <span class="brand inline-flex items-center gap-3">
     <svg viewBox="0 0 32 32" class="size-10 shrink-0" aria-hidden="true" focusable="false">
-      <rect width="32" height="32" rx="8" fill="#0e6b62" />
-      <path class="half half--left" d="M14.5 8a8 8 0 0 0 0 16Z" fill="#d9eee9" />
-      <path class="half half--right" d="M17.5 8a8 8 0 0 1 0 16Z" fill="#f0a457" />
+      <!-- Same tile and colours as public/favicon.svg, whatever the theme -->
+      <rect width="32" height="32" rx="8" fill="#fbf7f0" />
+      <g class="heart">
+        <g transform="translate(16 16.6) scale(0.62) translate(-121 -92)">
+          <path class="half half--left" d="M121 84c-3-6-14-14-20-6-5 7 2 14 20 26Z" fill="#f0a457" />
+          <path class="half half--right" d="M121 84c3-6 14-14 20-6 5 7-2 14-20 26Z" fill="#0e6b62" />
+        </g>
+      </g>
     </svg>
     <!-- Read as one word; the two animated halves are hidden from assistive tech -->
     <span class="sr-only">Intergee</span>
@@ -27,12 +33,19 @@
   animation-fill-mode: both;
 }
 
-/* The halves start apart, outside the square, and meet in the middle */
+/* The halves start apart and meet in the middle (units of the heart drawing, scaled down in the tile) */
 .half--left {
   animation-name: half-from-left;
 }
 .half--right {
   animation-name: half-from-right;
+}
+
+/* Once the halves have met, the heart beats once */
+.heart {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: heart-beat 450ms ease-in-out 850ms both;
 }
 
 /* The word: "Inter" from the left, "gee" from the right, slightly after the mark */
@@ -55,7 +68,7 @@
 
 @keyframes half-from-left {
   from {
-    transform: translateX(-10px);
+    transform: translateX(-18px);
     opacity: 0;
   }
   30% {
@@ -68,7 +81,7 @@
 }
 @keyframes half-from-right {
   from {
-    transform: translateX(10px);
+    transform: translateX(18px);
     opacity: 0;
   }
   30% {
@@ -77,6 +90,15 @@
   to {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+@keyframes heart-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
   }
 }
 @keyframes word-from-left {
@@ -103,6 +125,7 @@
 /* No movement when the visitor asks for less: the logo is shown directly in its final state */
 @media (prefers-reduced-motion: reduce) {
   .half,
+  .heart,
   .word__part {
     animation: none;
   }

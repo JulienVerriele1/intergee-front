@@ -15,6 +15,7 @@ import {
   validateStudent,
 } from '@/registration/registrationForm'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
+import AddressAutocomplete from '@/components/ui/AddressAutocomplete.vue'
 import FormField from '@/components/ui/FormField.vue'
 
 /** Second step of the registration: the form of the chosen role (spec 001). */
@@ -31,6 +32,12 @@ const errors = ref({})
 const errorMessage = ref('')
 const submitting = ref(false)
 const passwordVisible = ref(false)
+
+function fillAddress(address) {
+  form.value.street = address.street
+  form.value.postalCode = address.postalCode
+  form.value.city = address.city
+}
 
 async function submit() {
   errorMessage.value = ''
@@ -154,9 +161,9 @@ function messageOf(error) {
           <fieldset class="flex flex-col gap-4">
             <legend class="mb-1 text-xl font-bold">Adresse</legend>
             <p class="text-ink-muted">Elle n'est communiquée qu'à l'étudiant que vous choisirez.</p>
-            <FormField id="street" v-slot="field" label="Numéro et rue" :error="errors.street" required>
-              <input :id="field.id" v-model="form.street" type="text" class="form-input" autocomplete="address-line1"
-                     :aria-describedby="field.describedBy" :aria-invalid="field.invalid" required />
+            <FormField id="street" v-slot="field" label="Numéro et rue" help="Tapez les premiers caractères, puis choisissez l'adresse proposée." :error="errors.street" required>
+              <AddressAutocomplete :id="field.id" v-model="form.street" :described-by="field.describedBy" :invalid="field.invalid"
+                                   required @select="fillAddress" />
             </FormField>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-[10rem_1fr]">
               <FormField id="postal-code" v-slot="field" label="Code postal" :error="errors.postalCode" required>

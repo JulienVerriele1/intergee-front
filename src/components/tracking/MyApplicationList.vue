@@ -3,6 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { fetchMyApplications } from '@/api/missionApi'
 import { DEFAULT_PERIOD } from '@/missions/missionTracking'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
+import PaginationNav from '@/components/ui/PaginationNav.vue'
 import ApplicationCard from './ApplicationCard.vue'
 import PeriodSwitch from './PeriodSwitch.vue'
 
@@ -65,13 +66,7 @@ onMounted(loadApplications)
           <ApplicationCard :application="application" @changed="onChanged" />
         </li>
       </ul>
-      <nav v-if="result.totalPages > 1" aria-label="Pagination des candidatures" class="flex items-center justify-between gap-3">
-        <button type="button" class="btn-secondary" :disabled="page === 0" @click="goToPage(page - 1)">Précédente</button>
-        <span class="text-ink">Page {{ page + 1 }} sur {{ result.totalPages }}</span>
-        <button type="button" class="btn-secondary" :disabled="page + 1 >= result.totalPages" @click="goToPage(page + 1)">
-          Suivante
-        </button>
-      </nav>
+      <PaginationNav :page="page" :total-pages="result.totalPages" label="Pagination des candidatures" @go="goToPage" />
     </template>
   </section>
 </template>

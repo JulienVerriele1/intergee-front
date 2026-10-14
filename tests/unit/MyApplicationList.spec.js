@@ -73,7 +73,7 @@ describe('MyApplicationList', () => {
     expect(wrapper.text()).toContain('Votre candidature à « Mission PENDING » a été retirée.')
   })
 
-  it('reveals the address and the beneficiary of an accepted application', async () => {
+  it('shows the address and the beneficiary of an accepted application straight away', async () => {
     missionApi.fetchMyApplications.mockResolvedValue(page([application('ACCEPTED')]))
     missionApi.fetchAssignment.mockResolvedValue({
       location: { street: '12 rue des Lilas', postalCode: '59000', city: 'Lille', latitude: 50.6292, longitude: 3.0573 },
@@ -81,12 +81,9 @@ describe('MyApplicationList', () => {
     })
     const wrapper = mount(MyApplicationList)
     await flushPromises()
-    expect(wrapper.text()).not.toContain('12 rue des Lilas')
-
-    await buttonNamed(wrapper, "Voir l'adresse et le contact").trigger('click')
-    await flushPromises()
 
     expect(missionApi.fetchAssignment).toHaveBeenCalledWith('mission-ACCEPTED')
+    expect(wrapper.findAll('button').some((button) => button.text() === "Voir l'adresse et le contact")).toBe(false)
     expect(wrapper.text()).toContain('12 rue des Lilas, 59000 Lille')
     expect(wrapper.get('a[href="tel:+33320123456"]').text()).toBe('+33320123456')
     expect(wrapper.get('a[target="_blank"]').attributes('href')).toContain('mlat=50.6292')

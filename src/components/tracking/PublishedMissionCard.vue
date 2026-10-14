@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { assignMission, completeMission, fetchApplications, fetchAssignment } from '@/api/missionApi'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import { canReview, isOver, publishedMissionStatus } from '@/missions/missionTracking'
@@ -54,13 +54,17 @@ async function load(request) {
   }
 }
 
-async function toggleCandidates() {
-  candidates.value = candidates.value ? null : await load(fetchApplications)
+// The candidates and the assigned student are shown straight away, with the details of the mission
+async function loadStudents() {
+  if (props.mission.status === 'APPLIED') {
+    candidates.value = await load(fetchApplications)
+  }
+  if (hasStudent.value) {
+    assignment.value = await load(fetchAssignment)
+  }
 }
 
-async function showAssignment() {
-  assignment.value = await load(fetchAssignment)
-}
+onMounted(loadStudents)
 
 async function confirm() {
   sending.value = true
@@ -95,17 +99,9 @@ async function confirm() {
 
     <!-- Candidates: only while the beneficiary chooses -->
     <div v-if="mission.status === 'APPLIED'" class="flex flex-col gap-3">
-      <button
-        type="button"
-        class="btn-secondary self-start"
-        :aria-expanded="candidates !== null"
-        :aria-controls="`${titleId}-candidates`"
-        :disabled="loading"
-        @click="toggleCandidates"
-      >
-        {{ candidates ? 'Masquer les candidats' : 'Voir les candidats' }}
-      </button>
-      <ul v-if="candidates" :id="`${titleId}-candidates`" role="list" class="flex flex-col gap-3">
+      <h4 class="text-lg font-bold">Candidats</h4>
+      <p v-if="loading && !candidates" role="status" class="text-ink-muted">Chargement des candidats…</p>
+      <ul v-if="candidates" role="list" class="flex flex-col gap-3">
         <li
           v-for="candidate in candidates"
           :key="candidate.applicantId"
@@ -152,16 +148,8 @@ async function confirm() {
 
     <!-- Assigned student: contact revealed by the assignment (spec 006) -->
     <div v-if="hasStudent" class="flex flex-col gap-3">
-      <button
-        v-if="!assignment"
-        type="button"
-        class="btn-secondary self-start"
-        :disabled="loading"
-        @click="showAssignment"
-      >
-        Voir le contact de {{ mission.assignedStudentFirstName }}
-      </button>
-      <div v-else class="flex items-center gap-3 rounded-lg bg-surface-sunken p-3">
+      <p v-if="loading && !assignment" role="status" class="text-ink-muted">Chargement du contact de l’étudiant…</p>
+      <div v-if="assignment" class="flex items-center gap-3 rounded-lg bg-surface-sunken p-3">
         <StudentPhoto :student-id="assignment.student.id" :first-name="assignment.student.firstName" :size="64" />
         <dl class="grid flex-1 grid-cols-1 gap-1 text-base sm:grid-cols-2">
           <div>

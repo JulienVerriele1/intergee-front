@@ -1,16 +1,19 @@
 // Statuses of a mission and of an application as worded for each role (spec 009)
 
 /**
- * Each mission is in one period only (spec 009, RG-4 bis). "Retenu" is the default tab, "Passées" stays greyed until
- * selected (spec 009, Q7).
+ * Each mission is in one period only (spec 009, RG-4 bis). The first one is the default tab, "Passées" stays greyed
+ * until selected (spec 009, Q7).
  */
 export const PERIODS = Object.freeze([
-  { value: 'RETAINED', label: 'Retenu' },
+  { value: 'RETAINED', label: 'Retenues' },
   { value: 'UPCOMING', label: 'À venir' },
   { value: 'PAST', label: 'Passées', muted: true },
 ])
 
 export const DEFAULT_PERIOD = 'RETAINED'
+
+/** Wording of the first tab: retained for the student, assigned for the beneficiary and the caregiver */
+export const RETAINED_LABELS = Object.freeze({ student: 'Retenues', beneficiary: 'Attribuées' })
 
 /** A mission is over once its slot ends: start plus duration (spec 008). */
 export function isOver(mission, now = Date.now()) {
