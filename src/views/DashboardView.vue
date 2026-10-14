@@ -36,7 +36,7 @@ async function onKeydown(event, index) {
     </div>
 
     <div>
-      <!-- Folder tabs, in the colour of the panel they open: unlike the period pills inside the panels -->
+      <!-- Folder tabs in teal, attached to the teal top of their panel: unlike the period pills inside the panels -->
       <div role="tablist" aria-label="Tableau de bord" class="flex gap-1 overflow-x-auto px-2 sm:px-4">
         <button
           v-for="(tab, index) in TABS"
@@ -48,11 +48,11 @@ async function onKeydown(event, index) {
           :aria-selected="activeTab === tab.value"
           :aria-controls="`dashboard-panel-${tab.value}`"
           :tabindex="activeTab === tab.value ? 0 : -1"
-          class="focus-ring relative -mb-0.5 min-h-12 shrink-0 rounded-t-2xl border-2 px-4 text-lg font-bold transition-colors sm:px-6"
+          class="focus-ring relative min-h-12 shrink-0 rounded-t-2xl px-4 text-lg font-bold transition-colors sm:px-6"
           :class="
             activeTab === tab.value
-              ? 'z-10 border-border-subtle border-b-surface-sunken bg-surface-sunken text-ink'
-              : 'border-transparent text-ink-muted hover:bg-surface-sunken/60 hover:text-ink'
+              ? 'bg-primary text-on-primary'
+              : 'bg-primary-soft text-primary-ink hover:bg-primary hover:text-on-primary'
           "
           @click="activeTab = tab.value"
           @keydown="onKeydown($event, index)"
@@ -67,7 +67,7 @@ async function onKeydown(event, index) {
         v-show="activeTab === 'open'"
         role="tabpanel"
         aria-labelledby="dashboard-tab-open"
-        class="panel"
+        class="panel rounded-t-xl border-t-4 border-t-primary"
       >
         <OpenMissionList ref="openMissionList" @applications-changed="applicationsTable?.reload()" />
       </div>
@@ -76,7 +76,7 @@ async function onKeydown(event, index) {
         v-show="activeTab === 'applications'"
         role="tabpanel"
         aria-labelledby="dashboard-tab-applications"
-        class="panel"
+        class="panel rounded-t-xl border-t-4 border-t-primary"
       >
         <StudentApplicationsTable ref="applicationsTable" @applications-changed="openMissionList?.reload()" />
       </div>

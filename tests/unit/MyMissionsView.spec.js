@@ -31,7 +31,6 @@ describe('MyMissionsView', () => {
     setActivePinia(createPinia())
     vi.resetAllMocks()
     missionApi.fetchMyMissions.mockResolvedValue(EMPTY_PAGE)
-    missionApi.fetchMyApplications.mockResolvedValue(EMPTY_PAGE)
   })
 
   it('lets a beneficiary add a mission', async () => {
@@ -58,11 +57,5 @@ describe('MyMissionsView', () => {
     expect(panel.get('h2').text()).toBe('Besoin d’un coup de main ?')
     expect(panel.get('svg').attributes('aria-hidden')).toBe('true')
     expect(panel.find('a[href="/missions/publier"]').exists()).toBe(true)
-  })
-
-  it('offers no mission to add to a student', async () => {
-    const { wrapper } = await mountView('STUDENT')
-
-    expect(wrapper.find('a[href="/missions/publier"]').exists()).toBe(false)
   })
 })

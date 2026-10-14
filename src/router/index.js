@@ -20,7 +20,13 @@ const routes = [
     path: '/missions',
     name: 'my-missions',
     component: () => import('@/views/MyMissionsView.vue'),
-    meta: { requiresAuth: true, roles: ALL_ROLES, title: 'Mes missions' },
+    meta: {
+      requiresAuth: true,
+      roles: ALL_ROLES,
+      title: 'Mes missions',
+      // The applications of a student are a tab of their dashboard: an old link leads there
+      redirectByRole: { [ROLES.STUDENT]: 'dashboard' },
+    },
   },
   {
     path: '/profil',

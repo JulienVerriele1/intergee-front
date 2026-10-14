@@ -128,4 +128,13 @@ describe('StudentApplicationsTable', () => {
     expect(wrapper.get('#application-detail').text()).toContain('Courses')
     wrapper.unmount()
   })
+
+  it('comes with a decorative illustration', async () => {
+    missionApi.fetchMyApplications.mockResolvedValue(page([]))
+
+    const wrapper = mount(StudentApplicationsTable)
+    await flushPromises()
+
+    expect(wrapper.get('svg[viewBox="0 0 240 170"]').attributes('aria-hidden')).toBe('true')
+  })
 })

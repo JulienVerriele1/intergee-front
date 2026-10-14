@@ -6,6 +6,7 @@ import { formatDateTime } from '@/utils/formatters'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import PaginationNav from '@/components/ui/PaginationNav.vue'
 import ApplicationCard from './ApplicationCard.vue'
+import ApplicationsIllustration from './ApplicationsIllustration.vue'
 import PeriodSwitch from './PeriodSwitch.vue'
 import StatusBadge from './StatusBadge.vue'
 
@@ -79,10 +80,19 @@ defineExpose({ reload: loadApplications })
 
 <template>
   <section aria-labelledby="student-applications-title" :aria-busy="status === 'loading'" class="flex flex-col gap-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h2 id="student-applications-title" class="text-2xl font-bold">Mes candidatures</h2>
-      <PeriodSwitch v-model="period" compact />
+    <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
+      <div class="w-40 shrink-0 sm:w-44">
+        <ApplicationsIllustration />
+      </div>
+      <div class="flex flex-col gap-2 text-center sm:text-left">
+        <h2 id="student-applications-title" class="text-2xl font-bold">Mes candidatures</h2>
+        <p class="text-lg text-ink-muted">
+          Les missions auxquelles vous avez postulé. Une fois retenu, vous y trouvez l'adresse et le téléphone du
+          bénéficiaire.
+        </p>
+      </div>
     </div>
+    <PeriodSwitch v-model="period" compact class="self-start" />
 
     <AlertMessage v-if="successMessage" variant="success">{{ successMessage }}</AlertMessage>
     <p v-if="status === 'loading'" role="status" class="text-ink-muted">Chargement des candidatures…</p>
