@@ -76,7 +76,8 @@ const routes = [
     path: '/notifications',
     name: 'notifications',
     component: () => import('@/views/NotificationsView.vue'),
-    meta: { requiresAuth: true, roles: PUBLISHER_ROLES, title: 'Mes notifications' },
+    // Specs 015 and 016
+    meta: { requiresAuth: true, roles: [...PUBLISHER_ROLES, ROLES.STUDENT], title: 'Mes notifications' },
   },
   {
     path: '/declarations',

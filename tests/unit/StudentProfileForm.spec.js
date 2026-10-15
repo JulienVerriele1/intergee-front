@@ -93,6 +93,7 @@ describe('StudentProfileForm', () => {
       studyLevel: 'BAC_3',
       skills: ['CONVERSATION', 'WALK'],
       presentation: PRESENTATION,
+      phone: null,
     })
     expect(wrapper.text()).toContain('Votre profil est enregistré.')
     expect(wrapper.text()).toContain('21 ans')
@@ -109,6 +110,25 @@ describe('StudentProfileForm', () => {
 
     expect(profileApi.updateMyProfile.mock.calls[0][0]).not.toHaveProperty('birthDate')
     expect(wrapper.text()).not.toContain('il manque')
+  })
+
+  it('shows and saves the optional phone, and refuses a number that is not french', async () => {
+    profileApi.fetchMyProfile.mockResolvedValue({ ...COMPLETE, phone: '+33611111111' })
+    profileApi.updateMyProfile.mockResolvedValue(COMPLETE)
+    const wrapper = await mountView()
+
+    expect(wrapper.get('#phone').element.value).toBe('06 11 11 11 11')
+    expect(wrapper.text()).toContain('Jamais montré aux bénéficiaires.')
+
+    await wrapper.get('#phone').setValue('+44 20 7946 0958')
+    await wrapper.get('form').trigger('submit')
+    expect(profileApi.updateMyProfile).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Saisissez un numéro français')
+
+    await wrapper.get('#phone').setValue('07 22 33 44 55')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(profileApi.updateMyProfile.mock.calls[0][0].phone).toBe('07 22 33 44 55')
   })
 
   it('asks for at least one skill before sending', async () => {

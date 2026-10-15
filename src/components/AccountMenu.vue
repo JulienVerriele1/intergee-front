@@ -92,8 +92,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOnOutside
           <AppIcon name="user" :size="20" />
           Mon profil
         </RouterLink>
-        <!-- Notifications of the beneficiary side (spec 015) -->
-        <RouterLink v-if="role === ROLES.BENEFICIARY || role === ROLES.CAREGIVER" :to="{ name: 'notifications' }" class="btn-secondary w-full">
+        <!-- Notifications of the beneficiaries (spec 015) and of the students (spec 016) -->
+        <RouterLink :to="{ name: 'notifications' }" class="btn-secondary w-full">
           <AppIcon name="bell" :size="20" />
           Mes notifications
         </RouterLink>

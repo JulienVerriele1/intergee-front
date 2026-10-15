@@ -8,6 +8,7 @@ import AddressAutocomplete from '@/components/ui/AddressAutocomplete.vue'
 import FormField from '@/components/ui/FormField.vue'
 import StudentPhoto from '@/components/ui/StudentPhoto.vue'
 import { presentationError } from '@/profile/presentation'
+import { isFrenchPhone, nationalPhone } from '@/registration/registrationForm'
 import PresentationField from './PresentationField.vue'
 
 /** Profile of the student (spec 010): required photo, skills, identity, and presentation (spec 012). */
@@ -21,6 +22,7 @@ const photoVersion = ref(0)
 const photoMessage = ref(null) // { variant, text }
 const uploading = ref(false)
 const presentationFieldError = ref('')
+const phoneError = ref('')
 
 const missing = computed(() => {
   if (!profile.value) {
@@ -46,6 +48,8 @@ function toForm(source) {
     studyLevel: source.studyLevel ?? '',
     skills: [...source.skills],
     presentation: source.presentation ?? '',
+    // Optional, for the SMS only (spec 016, RG-4)
+    phone: nationalPhone(source.phone) ?? '',
   }
 }
 
@@ -69,6 +73,13 @@ function fillAddress(address) {
 async function save() {
   saveMessage.value = null
   presentationFieldError.value = presentationError(form.value.presentation)
+  phoneError.value = form.value.phone.trim() && !isFrenchPhone(form.value.phone)
+    ? 'Saisissez un numéro français, par exemple 06 12 34 56 78, ou laissez le champ vide.'
+    : ''
+  if (phoneError.value) {
+    saveMessage.value = { variant: 'error', text: 'Votre téléphone est à corriger : voir le champ « Téléphone ».' }
+    return
+  }
   if (presentationFieldError.value) {
     saveMessage.value = { variant: 'error', text: 'Votre présentation est à compléter : voir le champ « Présentation ».' }
     return
@@ -87,6 +98,7 @@ async function save() {
       studyLevel: form.value.studyLevel || null,
       skills: form.value.skills,
       presentation: form.value.presentation.trim(),
+      phone: form.value.phone.trim() || null,
     })
     form.value = toForm(profile.value)
     saveMessage.value = { variant: 'success', text: 'Votre profil est enregistré.' }
@@ -202,6 +214,24 @@ onMounted(load)
               </template>
             </FormField>
           </div>
+          <FormField
+            id="phone"
+            label="Téléphone (facultatif)"
+            help="Pour recevoir un SMS quand vous êtes choisi et la veille d'une mission. Jamais montré aux bénéficiaires."
+            :error="phoneError"
+          >
+            <template #default="{ id, describedBy, invalid }">
+              <input
+                :id="id"
+                v-model="form.phone"
+                type="tel"
+                autocomplete="tel"
+                class="form-input sm:w-64"
+                :aria-describedby="describedBy"
+                :aria-invalid="invalid"
+              />
+            </template>
+          </FormField>
         </section>
 
         <section aria-labelledby="presentation-title" class="card flex flex-col gap-4">

@@ -1,16 +1,27 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { RouterLink } from 'vue-router'
 import { fetchNotificationPreferences, updateNotificationPreferences } from '@/api/notificationApi'
+import { fetchMyProfile } from '@/api/profileApi'
+import { useAuthStore } from '@/stores/auth'
+import { ROLES } from '@/constants/roles'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 
 /** Notifications of the beneficiary side (spec 015): the channels accepted, and what is notified by which. */
-const EVENTS = [
+const PUBLISHER_EVENTS = [
   { label: 'Votre mission est publiée', when: 'Dès la publication', email: true, sms: false },
   { label: 'Un étudiant propose son aide', when: 'Dès chaque candidature', email: true, sms: true },
   { label: 'Rappel de la mission', when: 'La veille, à 10 h', email: true, sms: true },
   { label: 'Confirmer et évaluer la mission', when: '1 h après la fin', email: true, sms: false },
   { label: 'Déclarations CESU à faire', when: 'Le lundi, à 10 h, s’il y en a', email: true, sms: false },
+]
+/** Notifications of the students (spec 016, RG-1): the SMS need a phone in their profile. */
+const STUDENT_EVENTS = [
+  { label: 'Missions disponibles près de chez vous', when: 'Le lundi, à 9 h, s’il y en a', email: true, sms: false },
+  { label: 'Vous êtes choisi pour une mission', when: 'Dès que le bénéficiaire vous choisit', email: true, sms: true },
+  { label: 'Rappel de la mission', when: 'La veille, à 18 h', email: true, sms: true },
 ]
 const CHANNELS = [
   { key: 'email', label: 'Recevoir les e-mails' },
@@ -22,11 +33,27 @@ const status = ref('loading') // loading | ready | error
 const errorMessage = ref('')
 const savedMessage = ref('')
 const saving = ref(false)
+const { role } = storeToRefs(useAuthStore())
+const isStudent = computed(() => role.value === ROLES.STUDENT)
+const events = computed(() => (isStudent.value ? STUDENT_EVENTS : PUBLISHER_EVENTS))
+// A student without phone gets no SMS (spec 016, RG-4): invited to give one
+const missingPhone = ref(false)
+
+async function checkStudentPhone() {
+  try {
+    missingPhone.value = !(await fetchMyProfile()).phone
+  } catch {
+    // Only a hint: the settings work without it
+  }
+}
 
 async function load() {
   try {
     preferences.value = await fetchNotificationPreferences()
     status.value = 'ready'
+    if (isStudent.value) {
+      await checkStudentPhone()
+    }
   } catch (error) {
     errorMessage.value = missionErrorMessage(error)
     status.value = 'error'
@@ -87,7 +114,15 @@ onMounted(load)
         </div>
         <AlertMessage v-if="savedMessage" variant="success">{{ savedMessage }}</AlertMessage>
         <AlertMessage v-if="errorMessage" variant="error">{{ errorMessage }}</AlertMessage>
-        <p class="text-base text-ink-muted">
+        <AlertMessage v-if="missingPhone" variant="info">
+          Vous n’avez pas indiqué de téléphone : vous ne recevez pas de SMS.
+          <RouterLink :to="{ name: 'profile' }" class="font-bold underline">Ajouter un numéro dans « Mon profil »</RouterLink>
+        </AlertMessage>
+        <p v-if="isStudent" class="text-base text-ink-muted">
+          Quand vous êtes choisi pour une mission, et la veille, vous recevez un e-mail même si vous refusez les e-mails :
+          vous vous êtes engagé. Aucun SMS n’est envoyé entre 20 h et 8 h : il part à 8 h.
+        </p>
+        <p v-else class="text-base text-ink-muted">
           Le rappel de la veille et les déclarations CESU vous sont envoyés par e-mail même si vous refusez les e-mails :
           ils engagent l’employeur. Aucun SMS n’est envoyé entre 20 h et 8 h : il part à 8 h.
         </p>
@@ -106,7 +141,7 @@ onMounted(load)
               </tr>
             </thead>
             <tbody>
-              <tr v-for="event in EVENTS" :key="event.label" class="border-b border-border-subtle last:border-b-0">
+              <tr v-for="event in events" :key="event.label" class="border-b border-border-subtle last:border-b-0">
                 <th scope="row" class="px-4 py-3 font-bold">{{ event.label }}</th>
                 <td class="px-4 py-3">{{ event.when }}</td>
                 <td class="px-4 py-3">{{ event.email ? 'Oui' : 'Non' }}</td>
@@ -115,7 +150,7 @@ onMounted(load)
             </tbody>
           </table>
         </div>
-        <p class="text-base text-ink-muted">
+        <p v-if="!isStudent" class="text-base text-ink-muted">
           Pour une personne que vous accompagnez, c’est vous qui êtes prévenu ; elle reçoit aussi le SMS du rappel de la
           veille.
         </p>

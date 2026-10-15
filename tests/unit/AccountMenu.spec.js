@@ -95,8 +95,8 @@ describe('AccountMenu', () => {
     wrapper.unmount()
   })
 
-  it('offers the notification settings to beneficiaries and caregivers only', async () => {
-    for (const [role, expected] of [['BENEFICIARY', true], ['CAREGIVER', true], ['STUDENT', false], ['MODERATOR', false]]) {
+  it('offers the notification settings to all but moderators', async () => {
+    for (const [role, expected] of [['BENEFICIARY', true], ['CAREGIVER', true], ['STUDENT', true], ['MODERATOR', false]]) {
       const { wrapper } = await mountMenu(role)
       await wrapper.get('button[aria-label="Menu du compte"]').trigger('click')
       expect(wrapper.find('a[href="/notifications"]').exists()).toBe(expected)
