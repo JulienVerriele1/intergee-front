@@ -11,6 +11,10 @@ const props = defineProps({
   missionId: { type: String, required: true },
   /** Who or what is reviewed, e.g. "Léa" or "votre échange avec le bénéficiaire" */
   subject: { type: String, required: true },
+  /** The student who withdrew late, reviewed by the beneficiary side (spec 017, RG-6) */
+  studentId: { type: String, default: null },
+  /** After a late cancellation or withdrawal: published at once, without waiting for the other side (spec 017, RG-6) */
+  oneSided: { type: Boolean, default: false },
 })
 const emit = defineEmits(['submitted', 'cancel'])
 
@@ -26,8 +30,10 @@ async function send() {
   sending.value = true
   errorMessage.value = ''
   try {
-    await submitReview(props.missionId, rating.value, comment.value)
-    emit('submitted', 'Merci pour votre avis ! Il sera visible dès que l’autre partie aura donné le sien, ou dans 14 jours.')
+    await submitReview(props.missionId, rating.value, comment.value, props.studentId)
+    emit('submitted', props.oneSided
+      ? 'Merci pour votre avis ! Il est publié.'
+      : 'Merci pour votre avis ! Il sera visible dès que l’autre partie aura donné le sien, ou dans 14 jours.')
   } catch (error) {
     errorMessage.value = missionErrorMessage(error)
   } finally {
@@ -64,7 +70,10 @@ async function send() {
           {{ commentLength }} / {{ COMMENT_MAX }}
         </p>
       </div>
-      <p class="text-base text-ink-muted">
+      <p v-if="oneSided" class="text-base text-ink-muted">
+        Votre avis est définitif. Il est publié aussitôt, signé d'un prénom, jamais d'un nom de famille.
+      </p>
+      <p v-else class="text-base text-ink-muted">
         Votre avis est définitif. Il reste caché jusqu'à ce que l'autre partie ait noté, puis il est publié signé d'un prénom, jamais d'un nom de famille.
       </p>
       <AlertMessage v-if="errorMessage" variant="error">{{ errorMessage }}</AlertMessage>

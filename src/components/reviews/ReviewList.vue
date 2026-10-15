@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { reportComment } from '@/api/reviewApi'
 import { categoryLabel } from '@/constants/missionCategories'
+import { REVIEW_OCCASION_LABELS } from '@/missions/cancellation'
 import { REPORT_REASONS } from '@/constants/reportReasons'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
@@ -55,7 +56,8 @@ async function sendReport() {
         <p class="text-base font-bold">
           {{ review.authorFirstName }}
           <span class="font-normal text-ink-muted">
-            · {{ monthFormatter.format(new Date(review.createdAt)) }} · {{ categoryLabel(review.missionCategory) }}
+            · {{ monthFormatter.format(new Date(review.createdAt)) }} ·
+            {{ REVIEW_OCCASION_LABELS[review.occasion] ?? categoryLabel(review.missionCategory) }}
           </span>
         </p>
         <StarRating :average-rating="review.rating" :review-count="1" :show-count="false" />

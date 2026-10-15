@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import PublishedMissionList from '@/components/tracking/PublishedMissionList.vue'
 import * as missionApi from '@/api/missionApi'
 import * as reviewApi from '@/api/reviewApi'
@@ -53,8 +54,19 @@ function hasButton(wrapper, name) {
   return wrapper.findAll('button').some((button) => button.text() === name)
 }
 
+// The details link to the change of a mission (spec 017)
+function testRouter() {
+  return createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/', name: 'my-missions', component: { template: '<p>missions</p>' } },
+      { path: '/missions/:id/modifier', name: 'edit-mission', component: { template: '<p>modifier</p>' } },
+    ],
+  })
+}
+
 async function mountList(props = {}) {
-  const wrapper = mount(PublishedMissionList, { props, attachTo: document.body })
+  const wrapper = mount(PublishedMissionList, { props, attachTo: document.body, global: { plugins: [testRouter()] } })
   await flushPromises()
   return wrapper
 }
@@ -259,7 +271,7 @@ describe('PublishedMissionList', () => {
     await flushPromises()
 
     // Then
-    expect(reviewApi.submitReview).toHaveBeenCalledWith(published().id, 4, '')
+    expect(reviewApi.submitReview).toHaveBeenCalledWith(published().id, 4, '', null)
     expect(wrapper.text()).toContain('Merci pour votre avis')
   })
 
@@ -298,7 +310,7 @@ describe('PublishedMissionList', () => {
       published({ id: 'm2', title: 'Mission 2' }),
     ]))
     missionApi.fetchApplications.mockResolvedValue(CANDIDATES)
-    const wrapper = mount(PublishedMissionList, { attachTo: document.body })
+    const wrapper = mount(PublishedMissionList, { attachTo: document.body, global: { plugins: [testRouter()] } })
     await flushPromises()
 
     await buttonNamed(wrapper, 'Mission 1').trigger('click')

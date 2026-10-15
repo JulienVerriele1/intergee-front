@@ -5,8 +5,17 @@ import { http } from './http'
  *
  * @param {string|null} comment 500 characters at most; left out when blank
  */
-export async function submitReview(missionId, rating, comment = null) {
-  const { data } = await http.post('/reviews', { missionId, rating, ...(comment?.trim() && { comment: comment.trim() }) })
+/**
+ * @param studentId on the beneficiary side, the student who withdrew late (spec 017, RG-6); absent for the assigned
+ *                  student
+ */
+export async function submitReview(missionId, rating, comment = null, studentId = null) {
+  const { data } = await http.post('/reviews', {
+    missionId,
+    rating,
+    ...(comment?.trim() && { comment: comment.trim() }),
+    ...(studentId && { studentId }),
+  })
   return data
 }
 

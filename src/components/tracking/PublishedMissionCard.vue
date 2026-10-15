@@ -1,6 +1,14 @@
 <script setup>
 import { computed, inject, onMounted, ref } from 'vue'
-import { assignMission, completeMission, fetchApplications, fetchAssignment } from '@/api/missionApi'
+import { RouterLink } from 'vue-router'
+import { assignMission, cancelMission, completeMission, fetchApplications, fetchAssignment } from '@/api/missionApi'
+import {
+  CANCELLATION_REASONS,
+  cancellationReasonLabel,
+  isLateCancellation,
+  isLive,
+  lateReviewOpen,
+} from '@/missions/cancellation'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import { canReview, isOver, publishedMissionStatus } from '@/missions/missionTracking'
 import { formatDateTime } from '@/utils/formatters'
@@ -16,6 +24,7 @@ import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import CesuReminder from '@/components/missions/CesuReminder.vue'
+import ReasonDialog from './ReasonDialog.vue'
 
 const props = defineProps({
   mission: { type: Object, required: true },
@@ -32,10 +41,42 @@ const canConfirm = computed(() => props.mission.status === 'ASSIGNED' && isOver(
 const hasStudent = computed(() => ['ASSIGNED', 'COMPLETED'].includes(props.mission.status))
 const reviewable = computed(() => canReview(props.mission.completedAt, props.mission.reviewSubmitted))
 const reviewing = ref(false)
+// The student who withdrew late, being reviewed (spec 017, RG-6)
+const reviewingWithdrawal = ref(null)
 
 function onReviewed(message) {
   reviewing.value = false
+  reviewingWithdrawal.value = null
   emit('changed', message)
+}
+
+// Spec 017: changed or cancelled until it starts
+const live = computed(() => isLive(props.mission))
+const cancelling = ref(false)
+const cancelError = ref('')
+const cancellationWarning = computed(() => {
+  const student = props.mission.assignedStudentFirstName
+  if (isLateCancellation(props.mission)) {
+    return `La mission commence dans moins de 2 h : ${student} sera prévenu par e-mail et SMS, et pourra vous laisser un avis.`
+  }
+  if (props.mission.status === 'ASSIGNED') {
+    return `${student} sera prévenu par e-mail et SMS.`
+  }
+  return props.mission.status === 'APPLIED' ? 'Les étudiants qui ont proposé leur aide seront prévenus par e-mail.' : ''
+})
+
+async function cancel(reason) {
+  sending.value = true
+  cancelError.value = ''
+  try {
+    await cancelMission(props.mission.id, reason)
+    cancelling.value = false
+    emit('changed', `La mission « ${props.mission.title} » est annulée.`)
+  } catch (error) {
+    cancelError.value = missionErrorMessage(error)
+  } finally {
+    sending.value = false
+  }
 }
 
 const candidates = ref(null)
@@ -99,6 +140,37 @@ async function confirm() {
       <StatusBadge :status="status" class="ml-auto" />
     </div>
     <MissionHeadline :mission="mission" :title-id="titleId" />
+
+    <p v-if="mission.cancellation" class="text-base text-ink-muted">
+      Annulée le {{ formatDateTime(mission.cancellation.cancelledAt) }} · Motif : « {{ cancellationReasonLabel(mission.cancellation.reason) }} »
+    </p>
+
+    <!-- Spec 017: changed or cancelled until it starts -->
+    <div v-if="live" class="flex flex-wrap gap-3">
+      <RouterLink :to="{ name: 'edit-mission', params: { id: mission.id } }" class="btn-secondary">
+        <AppIcon name="pencil" :size="20" />
+        Modifier
+      </RouterLink>
+      <button type="button" class="btn-secondary" @click="cancelling = true">Annuler la mission</button>
+    </div>
+
+    <!-- Students who withdrew late may be reviewed (spec 017, RG-6) -->
+    <ul v-if="mission.lateWithdrawals?.length" role="list" class="flex flex-col gap-2">
+      <li v-for="withdrawal in mission.lateWithdrawals" :key="withdrawal.studentId" class="flex flex-col gap-2 rounded-lg bg-accent-soft p-3">
+        <p class="text-base">
+          {{ withdrawal.firstName }} s’est désisté moins de 8 h avant la mission, le {{ formatDateTime(withdrawal.withdrawnAt) }}.
+        </p>
+        <button
+          v-if="lateReviewOpen(withdrawal.reviewOpenUntil, withdrawal.reviewSubmitted)"
+          type="button"
+          class="btn-secondary self-start"
+          @click="reviewingWithdrawal = withdrawal"
+        >
+          Évaluer {{ withdrawal.firstName }}
+        </button>
+        <p v-else-if="withdrawal.reviewSubmitted" class="text-sm font-semibold text-green-800">Avis envoyé</p>
+      </li>
+    </ul>
 
     <AlertMessage v-if="errorMessage" variant="error">{{ errorMessage }}</AlertMessage>
 
@@ -222,6 +294,28 @@ async function confirm() {
     >
       La mission « {{ mission.title }} » sera marquée comme terminée. Cette confirmation est définitive.
     </ConfirmDialog>
+    <ReasonDialog
+      v-if="cancelling"
+      title="Annuler la mission ?"
+      confirm-label="Annuler la mission"
+      :reasons="CANCELLATION_REASONS"
+      :warning="cancellationWarning"
+      :busy="sending"
+      :error-message="cancelError"
+      @confirm="cancel"
+      @cancel="cancelling = false; cancelError = ''"
+    >
+      La mission « {{ mission.title }} » ne sera plus proposée aux étudiants. Cette annulation est définitive.
+    </ReasonDialog>
+    <ReviewDialog
+      v-if="reviewingWithdrawal"
+      :mission-id="mission.id"
+      :subject="reviewingWithdrawal.firstName"
+      :student-id="reviewingWithdrawal.studentId"
+      one-sided
+      @submitted="onReviewed"
+      @cancel="reviewingWithdrawal = null"
+    />
     <ReviewDialog
       v-if="reviewing"
       :mission-id="mission.id"

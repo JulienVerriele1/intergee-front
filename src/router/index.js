@@ -41,6 +41,14 @@ const routes = [
     meta: { requiresAuth: true, roles: PUBLISHER_ROLES, title: 'Publier une mission' },
   },
   {
+    path: '/missions/:id/modifier',
+    name: 'edit-mission',
+    component: () => import('@/views/EditMissionView.vue'),
+    props: true,
+    // Spec 017, UC-2
+    meta: { requiresAuth: true, roles: PUBLISHER_ROLES, title: 'Modifier la mission' },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),

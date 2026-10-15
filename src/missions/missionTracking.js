@@ -47,6 +47,8 @@ export function publishedMissionStatus(mission, now = Date.now()) {
         : { label: `Attribuée à ${mission.assignedStudentFirstName}`, tone: 'success' }
     case 'COMPLETED':
       return { label: 'Terminée', tone: 'neutral' }
+    case 'CANCELLED':
+      return { label: 'Annulée', tone: 'neutral' }
     default:
       return { label: mission.status, tone: 'neutral' }
   }
@@ -54,6 +56,10 @@ export function publishedMissionStatus(mission, now = Date.now()) {
 
 /** "Non retenue" rather than "Refusée": the student may apply elsewhere on this slot (spec 009, Q3). */
 export function applicationStatus(application) {
+  // Spec 017: the mission was cancelled, or the student withdrew
+  if (application.mission.status === 'CANCELLED') {
+    return { label: 'Mission annulée', tone: 'neutral' }
+  }
   switch (application.applicationStatus) {
     case 'PENDING':
       return { label: 'En attente', tone: 'info' }
@@ -63,6 +69,8 @@ export function applicationStatus(application) {
         : { label: 'Retenue', tone: 'success' }
     case 'REJECTED':
       return { label: 'Non retenue', tone: 'neutral' }
+    case 'WITHDRAWN':
+      return { label: 'Vous vous êtes désisté', tone: 'neutral' }
     default:
       return { label: application.applicationStatus, tone: 'neutral' }
   }

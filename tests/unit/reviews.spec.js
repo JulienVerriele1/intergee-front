@@ -69,7 +69,7 @@ describe('ReviewDialog', () => {
     await sendButton(wrapper).trigger('click')
     await flushPromises()
 
-    expect(reviewApi.submitReview).toHaveBeenCalledWith('mission-1', 5, '')
+    expect(reviewApi.submitReview).toHaveBeenCalledWith('mission-1', 5, '', null)
     expect(wrapper.emitted('submitted')[0][0]).toContain('Merci pour votre avis')
   })
 
@@ -143,7 +143,7 @@ describe('comments of the reviews', () => {
     await buttonNamed(wrapper, 'Envoyer mon avis').trigger('click')
     await flushPromises()
 
-    expect(reviewApi.submitReview).toHaveBeenCalledWith('mission-1', 5, 'Très patiente')
+    expect(reviewApi.submitReview).toHaveBeenCalledWith('mission-1', 5, 'Très patiente', null)
   })
 
   const REVIEWS = [

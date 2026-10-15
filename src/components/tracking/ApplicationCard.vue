@@ -1,6 +1,14 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { fetchAssignment, withdrawApplication } from '@/api/missionApi'
+import { fetchAssignment, withdrawApplication, withdrawFromAssignment } from '@/api/missionApi'
+import {
+  WITHDRAWAL_REASONS,
+  cancellationReasonLabel,
+  isLateWithdrawal,
+  isLive,
+  lateReviewOpen,
+} from '@/missions/cancellation'
+import { formatDateTime } from '@/utils/formatters'
 import { missionErrorMessage } from '@/missions/missionErrors'
 import { applicationStatus, canReview } from '@/missions/missionTracking'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
@@ -9,6 +17,7 @@ import ReviewDialog from '@/components/reviews/ReviewDialog.vue'
 import PresentationText from '@/components/profile/PresentationText.vue'
 import MissionHeadline from './MissionHeadline.vue'
 import StatusBadge from './StatusBadge.vue'
+import ReasonDialog from './ReasonDialog.vue'
 
 const props = defineProps({
   application: { type: Object, required: true },
@@ -26,6 +35,34 @@ const mapUrl = computed(() => {
 const reviewable = computed(
   () => props.application.applicationStatus === 'ACCEPTED' && canReview(props.application.completedAt, props.application.reviewSubmitted),
 )
+// The beneficiary cancelled less than 2 hours before: the assigned student may review them (spec 017, RG-6)
+const lateCancellationReviewable = computed(() =>
+  lateReviewOpen(props.application.cancellation?.reviewOpenUntil, props.application.reviewSubmitted),
+)
+const assigned = computed(() => props.application.applicationStatus === 'ACCEPTED' && mission.value.status === 'ASSIGNED')
+// Spec 017, RG-4: until the start
+const canWithdraw = computed(() => assigned.value && isLive(mission.value))
+const withdrawing = ref(false)
+const withdrawalError = ref('')
+const withdrawalWarning = computed(() =>
+  isLateWithdrawal(mission.value)
+    ? 'La mission commence dans moins de 8 h : le bénéficiaire sera prévenu par e-mail et SMS, et pourra vous laisser un avis.'
+    : 'Le bénéficiaire sera prévenu par e-mail et SMS, et pourra choisir un autre étudiant.',
+)
+
+async function withdrawFromMission(reason) {
+  busy.value = true
+  withdrawalError.value = ''
+  try {
+    await withdrawFromAssignment(mission.value.id, reason)
+    withdrawing.value = false
+    emit('changed', `Vous vous êtes désisté de « ${mission.value.title} ». Le bénéficiaire est prévenu.`)
+  } catch (error) {
+    withdrawalError.value = missionErrorMessage(error)
+  } finally {
+    busy.value = false
+  }
+}
 const reviewing = ref(false)
 
 function onReviewed(message) {
@@ -57,7 +94,7 @@ function loadAssignment() {
 }
 
 onMounted(() => {
-  if (props.application.applicationStatus === 'ACCEPTED') {
+  if (assigned.value || (props.application.applicationStatus === 'ACCEPTED' && mission.value.status === 'COMPLETED')) {
     loadAssignment()
   }
 })
@@ -74,9 +111,21 @@ function withdraw() {
   <article class="card flex flex-col gap-4" :aria-labelledby="titleId">
     <StatusBadge :status="status" class="self-end" />
     <MissionHeadline :mission="mission" :title-id="titleId" />
-    <p v-if="application.applicationStatus === 'REJECTED'" class="text-base text-ink-muted">
+    <p v-if="application.cancellation" class="text-base text-ink-muted">
+      Le bénéficiaire a annulé la mission le {{ formatDateTime(application.cancellation.cancelledAt) }} ·
+      Motif : « {{ cancellationReasonLabel(application.cancellation.reason) }} »
+    </p>
+    <p v-else-if="application.applicationStatus === 'REJECTED'" class="text-base text-ink-muted">
       Le bénéficiaire a choisi un autre étudiant. Vous pouvez postuler à une autre mission sur ce créneau.
     </p>
+    <template v-if="application.cancellation">
+      <button v-if="lateCancellationReviewable" type="button" class="btn-primary self-start" @click="reviewing = true">
+        Laisser un avis sur cette annulation tardive
+      </button>
+      <p v-else-if="application.cancellation.reviewOpenUntil && application.reviewSubmitted" class="text-sm font-semibold text-green-800">
+        Avis envoyé
+      </p>
+    </template>
 
     <AlertMessage v-if="errorMessage" variant="error">{{ errorMessage }}</AlertMessage>
 
@@ -91,7 +140,7 @@ function withdraw() {
     </button>
 
     <!-- The address is revealed to the assigned student only (spec 006, RG-6) -->
-    <template v-if="application.applicationStatus === 'ACCEPTED'">
+    <template v-if="application.applicationStatus === 'ACCEPTED' && !application.cancellation">
       <p v-if="!assignment && busy" role="status" class="text-ink-muted">Chargement de l’adresse et du contact…</p>
       <dl v-if="assignment" class="grid grid-cols-1 gap-2 rounded-lg bg-surface-sunken p-3 text-base sm:grid-cols-2">
         <div>
@@ -125,12 +174,29 @@ function withdraw() {
       </p>
       <button v-if="reviewable" type="button" class="btn-primary self-start" @click="reviewing = true">Laisser un avis</button>
       <p v-else-if="application.reviewSubmitted" class="text-sm font-semibold text-green-800">Avis envoyé</p>
+      <button v-if="canWithdraw" type="button" class="btn-secondary self-start" @click="withdrawing = true">Me désister</button>
     </template>
+
+    <ReasonDialog
+      v-if="withdrawing"
+      title="Vous désister de cette mission ?"
+      confirm-label="Me désister"
+      :reasons="WITHDRAWAL_REASONS"
+      :warning="withdrawalWarning"
+      :busy="busy"
+      :error-message="withdrawalError"
+      @confirm="withdrawFromMission"
+      @cancel="withdrawing = false; withdrawalError = ''"
+    >
+      Vous ne viendrez pas pour « {{ mission.title }} » et ne pourrez plus postuler à cette mission. Ce désistement est
+      définitif.
+    </ReasonDialog>
 
     <ReviewDialog
       v-if="reviewing"
       :mission-id="mission.id"
       subject="le bénéficiaire de cette mission"
+      :one-sided="Boolean(application.cancellation)"
       @submitted="onReviewed"
       @cancel="reviewing = false"
     />

@@ -2,7 +2,8 @@
 const MESSAGES = {
   STUDENT_NOT_VERIFIED: 'Votre compte étudiant doit être vérifié avant de pouvoir postuler.',
   MISSION_NOT_FOUND: "Cette mission n'existe plus.",
-  MISSION_CLOSED: "Cette mission n'accepte plus de changement : elle a commencé ou un étudiant a déjà été choisi.",
+  MISSION_CLOSED: "Cette mission n'accepte plus ce changement : elle a commencé, un étudiant a déjà été choisi, ou elle est terminée ou annulée.",
+  CHANGE_NOT_ALLOWED: 'Des étudiants ont postulé : la date, la durée, le lieu, la catégorie et les compétences ne changent plus, et le salaire seulement à la hausse. Pour le reste, annulez la mission et publiez-en une nouvelle.',
   MISSION_FULL: 'Cette mission a déjà reçu le nombre maximum de candidatures.',
   ALREADY_APPLIED: 'Vous avez déjà postulé à cette mission.',
   OVERLAPPING_APPLICATION: 'Cette mission a lieu en même temps qu’une autre mission à laquelle vous avez postulé.',

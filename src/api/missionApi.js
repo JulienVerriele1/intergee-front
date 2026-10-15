@@ -74,3 +74,30 @@ export async function completeMission(missionId) {
   const { data } = await http.post(`/missions/${encodeURIComponent(missionId)}/completion`)
   return data
 }
+
+/** A mission with its address, for its beneficiary or their caregiver, to change it (spec 017). */
+export async function fetchMission(missionId) {
+  const { data } = await http.get(`/missions/${encodeURIComponent(missionId)}`)
+  return data
+}
+
+/**
+ * Changes a mission not started yet (spec 017, RG-3): once a student applied, only the title, the description and the
+ * wage upwards. Same body as the publication.
+ */
+export async function changeMission(missionId, payload) {
+  const { data } = await http.put(`/missions/${encodeURIComponent(missionId)}`, payload)
+  return data
+}
+
+/** Cancels a mission not started yet, for good (spec 017, RG-2). @returns {Promise<{late: boolean}>} */
+export async function cancelMission(missionId, reason) {
+  const { data } = await http.post(`/missions/${encodeURIComponent(missionId)}/cancellation`, { reason })
+  return data
+}
+
+/** The assigned student withdraws before the start (spec 017, RG-4). @returns {Promise<{late: boolean}>} */
+export async function withdrawFromAssignment(missionId, reason) {
+  const { data } = await http.post(`/missions/${encodeURIComponent(missionId)}/assignment/withdrawal`, { reason })
+  return data
+}

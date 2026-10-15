@@ -31,6 +31,23 @@ export function emptyMissionForm() {
   }
 }
 
+/** The form of a published mission, to change it (spec 017, UC-2). */
+export function missionFormFrom(mission) {
+  return {
+    beneficiaryId: '',
+    title: mission.title,
+    category: mission.category,
+    description: mission.description,
+    scheduledAt: toDateTimeLocalValue(new Date(mission.scheduledAt)),
+    durationMinutes: mission.durationMinutes,
+    street: mission.location.street,
+    postalCode: mission.location.postalCode,
+    city: mission.location.city,
+    hourlyNetWage: Number(mission.hourlyNetWage).toFixed(2).replace('.', ','),
+    requiredSkills: [...mission.requiredSkills],
+  }
+}
+
 /**
  * @param requiresBeneficiary  true for a caregiver, who publishes on behalf of a managed beneficiary
  * @param minimumHourlyNetWage net SMIC with paid leave, when known (spec 013, RG-2): the server checks it anyway

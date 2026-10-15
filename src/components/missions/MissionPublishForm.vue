@@ -1,9 +1,10 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
-import { publishMission } from '@/api/missionApi'
+import { changeMission, publishMission } from '@/api/missionApi'
 import { estimateCost } from '@/api/wageApi'
-import { MISSION_CATEGORIES } from '@/constants/missionCategories'
-import { skillFamiliesForCategory } from '@/constants/profileOptions'
+import { MISSION_CATEGORIES, categoryLabel } from '@/constants/missionCategories'
+import { skillFamiliesForCategory, skillLabel } from '@/constants/profileOptions'
+import { missionErrorMessage } from '@/missions/missionErrors'
 import AlertMessage from '@/components/ui/AlertMessage.vue'
 import AddressAutocomplete from '@/components/ui/AddressAutocomplete.vue'
 import FormField from '@/components/ui/FormField.vue'
@@ -16,6 +17,7 @@ import {
   DURATION_OPTIONS,
   TITLE_MAX_LENGTH,
   emptyMissionForm,
+  missionFormFrom,
   toDateTimeLocalValue,
   toPublishPayload,
   validateMissionForm,
@@ -26,9 +28,16 @@ const props = defineProps({
   requiresBeneficiary: { type: Boolean, default: false },
   /** Until the employer says they are registered to the CESU (spec 013, RG-5) */
   showCesuReminder: { type: Boolean, default: false },
+  /** A published mission to change, as read by GET /missions/{id} (spec 017, UC-2); null to publish a new one */
+  mission: { type: Object, default: null },
 })
+const emit = defineEmits(['changed'])
 
-const form = reactive(emptyMissionForm())
+const editing = computed(() => Boolean(props.mission))
+// Once a student applied, the conditions they applied to stay, and the wage only goes up (spec 017, RG-3)
+const locked = computed(() => editing.value && props.mission.status !== 'OPEN')
+
+const form = reactive(props.mission ? missionFormFrom(props.mission) : emptyMissionForm())
 const errors = ref({})
 const location = ref(null) // address chosen among the suggestions, with its coordinates
 const locationError = ref('')
@@ -36,6 +45,7 @@ const submitting = ref(false)
 const submitError = ref('')
 const publishedMission = ref(null)
 const formElement = ref(null)
+const changedMessage = ref('')
 // Net SMIC with paid leave (spec 013, RG-2): the wage starts there, and is never published below it
 const minimumHourlyNetWage = ref(null)
 
@@ -50,6 +60,14 @@ onMounted(async () => {
     // The server checks the minimum anyway
   }
 })
+
+// The address of the mission being changed is already located: the watch on the address runs first
+if (props.mission) {
+  nextTick(() => {
+    const { street, postalCode, city, latitude, longitude } = props.mission.location
+    location.value = { label: `${street}, ${postalCode} ${city}`, latitude, longitude }
+  })
+}
 
 const minScheduledAt = computed(() => toDateTimeLocalValue(new Date()))
 // Skills a mission of the chosen category may require (spec 011, RG-2)
@@ -81,10 +99,14 @@ async function onAddressSelected(address) {
 async function submit() {
   submitError.value = ''
   publishedMission.value = null
+  changedMessage.value = ''
   errors.value = validateMissionForm(form, {
-    requiresBeneficiary: props.requiresBeneficiary,
+    requiresBeneficiary: props.requiresBeneficiary && !editing.value,
     minimumHourlyNetWage: minimumHourlyNetWage.value,
   })
+  if (locked.value && !errors.value.hourlyNetWage && Number(String(form.hourlyNetWage).replace(',', '.')) < Number(props.mission.hourlyNetWage)) {
+    errors.value.hourlyNetWage = `Des étudiants ont postulé : le salaire ne peut qu’augmenter, au moins ${formatEuros(props.mission.hourlyNetWage)} de l’heure.`
+  }
   if (!location.value) {
     locationError.value ||= 'Choisissez l’adresse dans la liste proposée sous « Numéro et rue ».'
   }
@@ -94,6 +116,18 @@ async function submit() {
   }
 
   submitting.value = true
+  if (editing.value) {
+    try {
+      const changed = await changeMission(props.mission.id, toPublishPayload(form, location.value, { requiresBeneficiary: false }))
+      changedMessage.value = `Mission « ${changed.title} » modifiée. Les étudiants qui ont postulé en sont prévenus par e-mail.`
+      emit('changed', changed)
+    } catch (error) {
+      submitError.value = missionErrorMessage(error)
+    } finally {
+      submitting.value = false
+    }
+    return
+  }
   try {
     publishedMission.value = await publishMission(
       toPublishPayload(form, location.value, { requiresBeneficiary: props.requiresBeneficiary }),
@@ -135,11 +169,39 @@ async function focusFirstInvalidField() {
       Mission « {{ publishedMission.title }} » publiée pour le
       {{ formatDateTime(publishedMission.scheduledAt) }} ({{ formatDuration(publishedMission.durationMinutes) }}).
     </AlertMessage>
+    <AlertMessage v-if="changedMessage" variant="success" class="mb-6">{{ changedMessage }}</AlertMessage>
     <AlertMessage v-if="submitError" variant="error" class="mb-6">{{ submitError }}</AlertMessage>
+
+    <!-- The conditions the students applied to (spec 017, RG-3) -->
+    <section v-if="locked" aria-labelledby="locked-title" class="mb-6 flex flex-col gap-3 rounded-lg bg-surface-sunken p-4">
+      <h3 id="locked-title" class="text-lg font-bold">Conditions fixées</h3>
+      <p class="text-base text-ink-muted">
+        Des étudiants ont postulé à ces conditions : elles ne changent plus, et le salaire seulement à la hausse. Pour les
+        changer, annulez la mission depuis « Mes missions » et publiez-en une nouvelle.
+      </p>
+      <dl class="grid grid-cols-1 gap-2 text-base sm:grid-cols-2">
+        <div>
+          <dt class="font-bold text-ink-muted">Date</dt>
+          <dd>{{ formatDateTime(mission.scheduledAt) }} ({{ formatDuration(mission.durationMinutes) }})</dd>
+        </div>
+        <div>
+          <dt class="font-bold text-ink-muted">Lieu</dt>
+          <dd>{{ mission.location.street }}, {{ mission.location.postalCode }} {{ mission.location.city }}</dd>
+        </div>
+        <div>
+          <dt class="font-bold text-ink-muted">Catégorie</dt>
+          <dd>{{ categoryLabel(mission.category) }}</dd>
+        </div>
+        <div>
+          <dt class="font-bold text-ink-muted">Compétences demandées</dt>
+          <dd>{{ mission.requiredSkills.map(skillLabel).join(', ') }}</dd>
+        </div>
+      </dl>
+    </section>
 
     <form ref="formElement" novalidate class="grid gap-5 sm:grid-cols-2" @submit.prevent="submit">
       <FormField
-        v-if="requiresBeneficiary"
+        v-if="requiresBeneficiary && !editing"
         id="beneficiaryId"
         v-slot="field"
         class="sm:col-span-2"
@@ -173,7 +235,7 @@ async function focusFirstInvalidField() {
         />
       </FormField>
 
-      <FormField id="category" v-slot="field" label="Catégorie" :error="errors.category" required>
+      <FormField v-if="!locked" id="category" v-slot="field" label="Catégorie" :error="errors.category" required>
         <select
           :id="field.id"
           v-model="form.category"
@@ -190,7 +252,7 @@ async function focusFirstInvalidField() {
       </FormField>
 
       <fieldset
-        v-if="skillFamilies.length > 0"
+        v-if="!locked && skillFamilies.length > 0"
         class="flex flex-col gap-3"
         :aria-describedby="errors.requiredSkills ? 'required-skills-error' : 'required-skills-help'"
       >
@@ -264,6 +326,7 @@ async function focusFirstInvalidField() {
       </FormField>
 
       <FormField
+        v-if="!locked"
         id="scheduledAt"
         v-slot="field"
         class="sm:col-span-2"
@@ -282,7 +345,7 @@ async function focusFirstInvalidField() {
         />
       </FormField>
 
-      <FormField id="durationMinutes" v-slot="field" label="Durée estimée" :error="errors.durationMinutes" required>
+      <FormField v-if="!locked" id="durationMinutes" v-slot="field" label="Durée estimée" :error="errors.durationMinutes" required>
         <select
           :id="field.id"
           v-model.number="form.durationMinutes"
@@ -297,7 +360,7 @@ async function focusFirstInvalidField() {
         </select>
       </FormField>
 
-      <fieldset class="grid gap-5 rounded-lg border border-border-subtle p-4 sm:col-span-2 sm:grid-cols-6">
+      <fieldset v-if="!locked" class="grid gap-5 rounded-lg border border-border-subtle p-4 sm:col-span-2 sm:grid-cols-6">
         <legend class="px-1 font-bold text-ink">Lieu de la mission</legend>
         <FormField id="street" v-slot="field" class="sm:col-span-6" label="Numéro et rue" help="Tapez les premiers caractères, puis choisissez l'adresse proposée." :error="errors.street" required>
           <AddressAutocomplete
@@ -345,7 +408,8 @@ async function focusFirstInvalidField() {
 
       <div class="sm:col-span-2">
         <button type="submit" class="btn-primary w-full sm:w-auto" :disabled="submitting">
-          {{ submitting ? 'Publication…' : 'Publier la mission' }}
+          <template v-if="editing">{{ submitting ? 'Enregistrement…' : 'Enregistrer les modifications' }}</template>
+          <template v-else>{{ submitting ? 'Publication…' : 'Publier la mission' }}</template>
         </button>
       </div>
     </form>
