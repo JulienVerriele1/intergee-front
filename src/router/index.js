@@ -73,6 +73,12 @@ const routes = [
     meta: { requiresAuth: true, roles: [ROLES.MODERATOR], title: 'Modération' },
   },
   {
+    path: '/notifications',
+    name: 'notifications',
+    component: () => import('@/views/NotificationsView.vue'),
+    meta: { requiresAuth: true, roles: PUBLISHER_ROLES, title: 'Mes notifications' },
+  },
+  {
     path: '/declarations',
     name: 'declarations',
     component: () => import('@/views/DeclarationsView.vue'),

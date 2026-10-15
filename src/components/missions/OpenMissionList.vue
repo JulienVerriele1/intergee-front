@@ -131,8 +131,16 @@ defineExpose({ reload: loadMissions })
         :options="MISSION_CATEGORIES"
         all-label="Toutes"
       />
-      <p v-if="status === 'ready' && result.totalItems > 0" class="text-base text-ink-muted">
-        {{ result.totalItems }} mission{{ result.totalItems > 1 ? 's' : '' }} à découvrir
+      <!-- Announced when the filter changes the count -->
+      <p
+        v-if="status === 'ready' && result.totalItems > 0"
+        aria-live="polite"
+        class="inline-flex items-center gap-3 rounded-full border-2 border-accent bg-accent-soft py-1 pr-5 pl-1"
+      >
+        <span class="flex h-10 min-w-10 items-center justify-center rounded-full bg-primary px-2 text-xl font-bold text-on-primary">
+          {{ result.totalItems }}
+        </span>
+        <span class="-ml-1 text-lg font-bold text-ink">{{ ' ' }}mission{{ result.totalItems > 1 ? 's' : '' }} à découvrir</span>
       </p>
     </div>
 
