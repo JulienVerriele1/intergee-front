@@ -27,6 +27,7 @@ async function mountWithRouter(component, props = {}) {
       { path: '/inscription/etudiant', name: 'register-student', component: PAGE },
       { path: '/inscription/beneficiaire', name: 'register-beneficiary', component: PAGE },
       { path: '/profil', name: 'profile', component: PAGE },
+      { path: '/mot-de-passe-oublie', name: 'forgot-password', component: { template: '<p>oublié</p>' } },
     ],
   })
   await router.push('/inscription')

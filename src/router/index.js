@@ -54,6 +54,25 @@ const routes = [
     component: () => import('@/views/LoginView.vue'),
     meta: { guestOnly: true, title: 'Connexion' },
   },
+  // Spec 018: opened from the login page or a link received by e-mail, logged in or not
+  {
+    path: '/mot-de-passe-oublie',
+    name: 'forgot-password',
+    component: () => import('@/views/ForgotPasswordView.vue'),
+    meta: { title: 'Mot de passe oublié' },
+  },
+  {
+    path: '/reinitialiser-mot-de-passe',
+    name: 'reset-password',
+    component: () => import('@/views/ResetPasswordView.vue'),
+    meta: { title: 'Nouveau mot de passe' },
+  },
+  {
+    path: '/verifier-email',
+    name: 'verify-email',
+    component: () => import('@/views/VerifyEmailView.vue'),
+    meta: { title: 'Vérification de votre adresse' },
+  },
   {
     path: '/inscription',
     name: 'register',

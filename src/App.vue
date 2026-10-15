@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import AppHeader from '@/components/AppHeader.vue'
 import AppBackdrop from '@/components/AppBackdrop.vue'
+import EmailVerificationBanner from '@/components/EmailVerificationBanner.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,6 +36,7 @@ router.afterEach((to, from) => {
   </a>
   <div class="flex min-h-dvh flex-col">
     <AppHeader />
+    <EmailVerificationBanner />
     <!-- The backdrop fills the space between header and footer; isolate keeps its negative z-index above the page -->
     <div class="relative isolate flex flex-1 flex-col">
       <AppBackdrop />

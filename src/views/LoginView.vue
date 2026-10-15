@@ -88,6 +88,7 @@ async function submit() {
         <button type="submit" class="btn-primary w-full" :disabled="submitting">
           {{ submitting ? 'Connexion…' : 'Se connecter' }}
         </button>
+        <RouterLink :to="{ name: 'forgot-password' }" class="link self-center">Mot de passe oublié ?</RouterLink>
       </form>
     </div>
 

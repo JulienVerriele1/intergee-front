@@ -1,6 +1,8 @@
 // Explains a refused action on a mission (specs 005 to 009), a review (spec 007) or a profile (spec 010) from the business code of the API error
 const MESSAGES = {
   STUDENT_NOT_VERIFIED: 'Votre compte étudiant doit être vérifié avant de pouvoir postuler.',
+  EMAIL_NOT_VERIFIED: 'Vérifiez d’abord votre adresse e-mail : ouvrez le lien que nous vous avons envoyé, ou faites-vous le renvoyer depuis le bandeau en haut de la page.',
+  INVALID_LINK: 'Ce lien n’est plus valable : il a déjà servi, a été remplacé par un plus récent, ou a expiré.',
   MISSION_NOT_FOUND: "Cette mission n'existe plus.",
   MISSION_CLOSED: "Cette mission n'accepte plus ce changement : elle a commencé, un étudiant a déjà été choisi, ou elle est terminée ou annulée.",
   CHANGE_NOT_ALLOWED: 'Des étudiants ont postulé : la date, la durée, le lieu, la catégorie et les compétences ne changent plus, et le salaire seulement à la hausse. Pour le reste, annulez la mission et publiez-en une nouvelle.',
