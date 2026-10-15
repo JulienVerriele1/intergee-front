@@ -87,10 +87,15 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOnOutside
         </div>
       </section>
 
-      <nav v-if="role === ROLES.STUDENT || role === ROLES.BENEFICIARY" aria-label="Compte" class="p-5">
+      <nav v-if="role !== ROLES.MODERATOR" aria-label="Compte" class="flex flex-col gap-3 p-5">
         <RouterLink v-if="role === ROLES.STUDENT || role === ROLES.BENEFICIARY" :to="{ name: 'profile' }" class="btn-secondary w-full">
           <AppIcon name="user" :size="20" />
           Mon profil
+        </RouterLink>
+        <!-- Notifications of the beneficiary side (spec 015) -->
+        <RouterLink v-if="role === ROLES.BENEFICIARY || role === ROLES.CAREGIVER" :to="{ name: 'notifications' }" class="btn-secondary w-full">
+          <AppIcon name="bell" :size="20" />
+          Mes notifications
         </RouterLink>
       </nav>
 

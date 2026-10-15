@@ -20,6 +20,7 @@ async function mountMenu(role) {
       { path: '/profil', name: 'profile', component: { template: '<p>profil</p>' } },
       { path: '/faq', name: 'faq', component: { template: '<p>faq</p>' } },
       { path: '/declarations', name: 'declarations', component: { template: '<p>declarations</p>' } },
+      { path: '/notifications', name: 'notifications', component: { template: '<p>notifications</p>' } },
     ],
   })
   await router.push('/')
@@ -92,5 +93,14 @@ describe('AccountMenu', () => {
     expect(reviewApi.fetchMyReputations).not.toHaveBeenCalled()
     expect(wrapper.find('a[href="/profil"]').exists()).toBe(false)
     wrapper.unmount()
+  })
+
+  it('offers the notification settings to beneficiaries and caregivers only', async () => {
+    for (const [role, expected] of [['BENEFICIARY', true], ['CAREGIVER', true], ['STUDENT', false], ['MODERATOR', false]]) {
+      const { wrapper } = await mountMenu(role)
+      await wrapper.get('button[aria-label="Menu du compte"]').trigger('click')
+      expect(wrapper.find('a[href="/notifications"]').exists()).toBe(expected)
+      wrapper.unmount()
+    }
   })
 })

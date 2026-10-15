@@ -21,6 +21,7 @@ async function mountHeader(role) {
       { path: '/profil', name: 'profile', component: { template: '<p>profil</p>' } },
       { path: '/faq', name: 'faq', component: { template: '<p>faq</p>' } },
       { path: '/declarations', name: 'declarations', component: { template: '<p>declarations</p>' } },
+      { path: '/notifications', name: 'notifications', component: { template: '<p>notifications</p>' } },
     ],
   })
   await router.push('/')
