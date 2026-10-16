@@ -1,0 +1,36 @@
+# Continuous deployment (ADR 0011 of the back repository): every push on main is deployed on the production
+# server. The script of the back repository also brings the front up to date.
+# Secrets: VPS_HOST, VPS_USER, VPS_SSH_KEY (private key) and VPS_KNOWN_HOSTS (ssh-keyscan of the server).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Deploy on the server
+        env:
+          TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_deploy -o BatchMode=yes "$TARGET" \
+            'cd /opt/intergee/intergee && git pull --ff-only origin main && ./deploy/deploy.sh'
