@@ -48,6 +48,12 @@ server {
 }
 ```
 
+## Branches et déploiement
+
+Même flux que le dépôt back (ADR 0011 de `intergee`) : on part de `develop` pour une branche `feat/…`, revenue par
+pull request (CI : `npm test` et `npm run build`). Un merge sur `develop` ouvre la pull request `develop` → `main` ;
+la merger (en merge commit) déploie en production.
+
 ## Structure
 
 ```

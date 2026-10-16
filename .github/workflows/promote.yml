@@ -1,0 +1,30 @@
+# Git flow (ADR 0011 of the back repository): once something is merged into develop, propose it for production
+# with a develop → main pull request, unless one is already open (it then simply gains the new commits).
+name: Propose a release
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open the develop → main pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ -n "$(gh pr list --base main --head develop --state open --json number --jq '.[].number')" ]; then
+            echo "A develop → main pull request is already open."
+          elif [ "$(gh api "repos/$GH_REPO/compare/main...develop" --jq .ahead_by)" = "0" ]; then
+            echo "develop has nothing that main lacks."
+          else
+            gh pr create --base main --head develop \
+              --title "Release $(date -u +%F)" \
+              --body "Mise en production de ce qui a été mergé sur \`develop\`. Merger avec un **merge commit** (pas de squash) : le merge sur \`main\` déploie en production."
+          fi
